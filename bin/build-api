@@ -92,7 +92,7 @@ copy_chrome() {
    value.
 
    Contrast follows the same rule as the site: the spec's comment colour
-   (#6272a4) is used for syntax only, never for text that must be read. */
+   (var(--syntax-comment)) is used for syntax only, never for text that must be read. */
 
 /* YARD's own stylesheet sizes most of its content in `em` against this body
    size (menus, inheritance trees, the on-page table of contents). Those em
@@ -229,7 +229,7 @@ h3.signature, p.signature {
 }
 
 h3.signature a, p.signature a {
-  color: #8be9fd;
+  color: var(--syntax-cyan);
 }
 
 .summary_signature {
@@ -245,7 +245,7 @@ h3.signature a, p.signature a {
 
 .summary_signature a,
 ul.summary a {
-  color: #8be9fd;
+  color: var(--syntax-cyan);
 }
 
 /* Inline code and code blocks */
@@ -254,7 +254,7 @@ ul.summary a {
 .docstring p > tt,
 .tags p > code,
 .tags p > tt {
-  color: #ffb86c;
+  color: var(--syntax-orange);
   background: var(--bg-deep);
   border: 1px solid var(--line);
   border-radius: 4px;
@@ -298,17 +298,19 @@ dl.constants dd pre.code {
   overflow-wrap: anywhere;
 }
 
-/* YARD's syntax classes, mapped to the Dracula token set. */
-pre.code .comment { color: var(--code-comment); }
+/* YARD's syntax classes, mapped to the role names in tokens.css — the same
+   names the manual's highlighter emits, so a token has one colour across both
+   sections and tokens.css stays the only place a colour is written. */
+pre.code .comment { color: var(--syntax-comment); }
 pre.code .const,
 pre.code .constant {
-  color: #bd93f9;
+  color: var(--syntax-purple);
 }
 pre.code .kw,
 pre.code .rubyid_require,
 pre.code .rubyid_extend,
 pre.code .rubyid_include {
-  color: #ff79c6;
+  color: var(--syntax-pink);
 }
 pre.code .tstring_content,
 pre.code .heredoc_beg,
@@ -329,17 +331,17 @@ pre.code .tstring,
 pre.code .dstring,
 pre.code .regexp,
 pre.code .dregexp {
-  color: #f1fa8c;
+  color: var(--syntax-yellow);
 }
 pre.code .label,
 pre.code .symbol {
-  color: #ff79c6;
+  color: var(--syntax-pink);
 }
 pre.code .ivar,
 pre.code .gvar,
 pre.code .rubyid_backref,
 pre.code .rubyid_nth_ref {
-  color: #8be9fd;
+  color: var(--syntax-cyan);
 }
 pre.code .fid,
 pre.code .rubyid_new,
@@ -348,10 +350,10 @@ pre.code .rubyid_to_f,
 pre.code .rubyid_to_i,
 pre.code .rubyid_each,
 pre.code .dot + pre.code .id {
-  color: #50fa7b;
+  color: var(--syntax-green);
 }
 pre.code .val {
-  color: #ffb86c;
+  color: var(--syntax-orange);
 }
 pre.code .info.file {
   color: var(--muted);
@@ -558,7 +560,7 @@ body#full_list_body,
 }
 
 .api-list #full_list li a {
-  color: #8be9fd;
+  color: var(--syntax-cyan);
 }
 
 #full_list li a:hover {

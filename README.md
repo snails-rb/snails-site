@@ -44,6 +44,14 @@ All three sections set type from one scale of eight steps in `src/styles/tokens.
 
 Body prose is 15px, not the browser's 16px: JetBrains Mono is a monospace and every character is wider, so 16px monospace reads like 18px sans. Code, navigation, and tables sit one step down at 13px; headings go 17 / 20 / 30. The reference is <https://omarchy.org/>, which reads at the same 15px.
 
+## Code blocks
+
+The manual is rendered by `marked` in `src/lib/manual.mjs`, not by Astro's own markdown pipeline — the chapters live outside `src/`, and the loader rewrites chapter links before rendering. Astro's built-in highlighting therefore never reaches these blocks, so `src/lib/highlight.mjs` highlights each fence with shiki at build time. The output is `<span style="color:var(--syntax-…)">` markup and the browser ships no highlighter.
+
+The grammar table in `highlight.mjs` lists the fence labels a chapter may use. A fence with any other label fails the build instead of rendering uncoloured — add the grammar there when a chapter needs one. A bare fence renders as plain text.
+
+The `--syntax-*` roles in `src/styles/tokens.css` are the only place a code colour is written, and the API reference names them too: `bin/build-api` maps YARD's tokenizer classes onto the same roles.
+
 ## Deploy path
 
 GitHub Pages serves this repository at `/snails-site/`, so every internal link is built from `base` in `astro.config.mjs`. When a custom domain serves the site from the root, set `SITE_BASE=/` and nothing else changes — the tests fail on any link that ignores the base, so a missed spot cannot reach a deploy.

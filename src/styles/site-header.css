@@ -22,7 +22,7 @@
 .site-header .brand {
   font-size: var(--text-base);
   font-weight: var(--weight-brand);
-  color: #ff79c6;
+  color: var(--syntax-pink);
   text-decoration: none;
 }
 
@@ -48,7 +48,7 @@
 }
 
 .site-header .site-nav a.active {
-  color: #50fa7b;
+  color: var(--syntax-green);
 }
 
 @media (max-width: 40rem) {
