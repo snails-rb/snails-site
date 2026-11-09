@@ -1,0 +1,14 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    yard (0.9.45)
+
+PLATFORMS
+  ruby
+  x86_64-linux
+
+DEPENDENCIES
+  yard (= 0.9.45)
+
+BUNDLED WITH
+   2.5.9

@@ -1,0 +1,18 @@
+# build output
+dist/
+public/api/
+
+# vendored gems and npm packages
+vendor/bundle/
+node_modules/
+
+# YARD scratch databases
+.yardoc/
+
+# Astro / bundler local state
+.astro/
+.bundle/
+
+# OS / editor
+.DS_Store
+*.swp

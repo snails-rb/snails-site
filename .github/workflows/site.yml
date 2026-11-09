@@ -1,0 +1,63 @@
+name: site
+
+# One workflow does both jobs: the pull-request check and the deploy. The
+# artifact that goes live is the one the check built, so a deploy can never
+# carry something the tests have not seen.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      # Ruby comes from .ruby-version, so the runner and the local shell read
+      # the same pin.
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - run: bin/build-api --check
+
+      # dist/ carries .nojekyll, which the Pages artifact drops unless hidden
+      # files are asked for.
+      - uses: actions/upload-pages-artifact@v5
+        if: github.event_name != 'pull_request'
+        with:
+          path: dist
+          include-hidden-files: true
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v6
+      - id: deployment
+        uses: actions/deploy-pages@v5

@@ -1,0 +1,17 @@
+{
+  "name": "snails-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "npm run api && astro build",
+    "api": "bin/build-api",
+    "preview": "astro preview",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "@fontsource-variable/jetbrains-mono": "^5.3.0",
+    "astro": "^7.4.0",
+    "marked": "^18.1.1"
+  }
+}

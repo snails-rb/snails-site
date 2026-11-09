@@ -1,0 +1,25 @@
+#!/bin/bash
+# Serve the built site the way GitHub Pages does: from a repository subpath.
+#
+#   bin/preview-pages [port]
+#
+# `astro dev` serves at the root, so a link that ignores `base` still works
+# there. This script copies dist/ under /snails-site/ and serves the parent,
+# which is the only local setup where such a link actually 404s.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PORT="${1:-4212}"
+BASE="${SITE_BASE:-/snails-site/}"
+NAME="${BASE#/}"
+NAME="${NAME%/}"
+
+[[ -d $ROOT/dist ]] || { echo "[preview-pages] no dist/ — run 'npm run build' first" >&2; exit 1; }
+
+STAGE="$(mktemp -d)"
+trap 'rm -rf "$STAGE"' EXIT
+cp -R "$ROOT/dist" "$STAGE/$NAME"
+
+echo "[preview-pages] http://localhost:$PORT$BASE"
+echo "[preview-pages] serving the built output from $BASE — Ctrl-C to stop"
+( cd "$STAGE" && python3 -m http.server "$PORT" )

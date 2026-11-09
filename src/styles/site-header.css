@@ -1,0 +1,59 @@
+/* The site header. One source for both halves of the site: Astro imports this
+   file, and build-api copies it into the YARD output, so the manual and the
+   API reference cannot drift apart at the top of the page. */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--bg-deep);
+  border-bottom: 1px solid var(--line);
+}
+
+.site-header-inner {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  max-width: 78rem;
+  margin: 0 auto;
+  padding: 0.9rem 1.5rem;
+}
+
+.site-header .brand {
+  font-size: var(--text-base);
+  font-weight: var(--weight-brand);
+  color: #ff79c6;
+  text-decoration: none;
+}
+
+.site-header .brand:hover {
+  color: var(--accent-strong);
+}
+
+/* Navigation sits one step below the body so it reads as chrome, not content.
+   14px is omarchy.org's top-nav step; 13px stays for the sidebar and code. */
+.site-header .site-nav {
+  display: flex;
+  gap: 1.5rem;
+  font-size: var(--text-md);
+}
+
+.site-header .site-nav a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.site-header .site-nav a:hover {
+  color: var(--fg);
+}
+
+.site-header .site-nav a.active {
+  color: #50fa7b;
+}
+
+@media (max-width: 40rem) {
+  .site-header-inner {
+    gap: 1.5rem;
+    padding: 0.75rem 1.25rem;
+  }
+}

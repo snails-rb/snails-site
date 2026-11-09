@@ -1,0 +1,90 @@
+name: Refresh the manual
+
+# Keeps the vendored manual current without anyone running bin/sync-manual by
+# hand. The chapters live in snails-rb/snails; this copies them into manual/ and
+# commits what changed.
+#
+# The API reference is not touched here: bin/build-api fetches runtime/ from the
+# same repo at build time, so it is always built from the current tree. There is
+# nothing to keep in sync.
+#
+# A chapter that disappears fails the run instead of being dropped: the site
+# links to chapters by slug, so a rename or removal is done by hand, together
+# with the links that point at it.
+#
+# A push made with the workflow's own token starts no other workflow, so the
+# deploy is asked for explicitly at the end.
+
+on:
+  schedule:
+    - cron: '37 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: refresh-manual
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Copy the manual from snails
+        id: sync
+        run: |
+          bin/sync-manual
+          removed=$(git ls-files --deleted -- manual)
+          if [ -n "$removed" ]; then
+            echo "::error::snails removed or renamed manual chapters; sync by hand and update the links that point at them:"
+            echo "$removed"
+            exit 1
+          fi
+          if [ -z "$(git status --porcelain -- manual)" ]; then
+            echo "The manual is current."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-node@v7
+        if: steps.sync.outputs.changed == 'true'
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: ruby/setup-ruby@v1
+        if: steps.sync.outputs.changed == 'true'
+        with:
+          bundler-cache: true
+
+      - name: Check the site builds with it
+        if: steps.sync.outputs.changed == 'true'
+        run: |
+          npm ci
+          npm run build
+          npm test
+
+      - name: Commit what changed
+        id: commit
+        if: steps.sync.outputs.changed == 'true'
+        run: |
+          git add manual
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Refresh the manual from snails" \
+            -m "$(git diff --cached --stat | tail -1)"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin HEAD:"${GITHUB_REF_NAME}"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy what changed
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run site.yml --ref "${GITHUB_REF_NAME}"

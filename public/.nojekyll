@@ -1,0 +1,3 @@
+# GitHub Pages runs Jekyll unless this file exists, and Jekyll drops every
+# path starting with an underscore — which is most of the Astro bundle
+# (`_astro/`) and the YARD index (`_index.html`).

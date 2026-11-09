@@ -1,0 +1,35 @@
+---
+import Base from '../layouts/Base.astro';
+import { url } from '../lib/manual.mjs';
+---
+<Base>
+  <article class="front">
+    <p class="eyebrow">Ruby → one native binary</p>
+    <h1>Web apps that compile to one native binary</h1>
+    <p class="lede">
+      snails is a framework for building web apps in ordinary Ruby. Routes, controllers, models,
+      forms — snails compiles them into a single binary that boots fast and runs anywhere a binary
+      runs. No runtime to install on the server, no asset pipeline, no view layer: your app answers
+      with JSON.
+    </p>
+
+    <pre class="install"><code>curl -fsSL https://raw.githubusercontent.com/snails-rb/dist/main/install.sh | bash
+snails new demo
+demo/bin/test</code></pre>
+
+    <p class="note">Status: alpha. The public API can change between 0.x releases.</p>
+
+    <div class="cards">
+      <a class="card" href={url('/manual/')}>
+        <span class="card-title">Manual</span>
+        <span class="card-body">Everything you need to build, run, and ship an app. Eighteen chapters, from install to deploy.</span>
+        <span class="card-go">Read the manual →</span>
+      </a>
+      <a class="card" href={url('/api/')}>
+        <span class="card-title">API reference</span>
+        <span class="card-body">The public surface of the runtime, generated from its comments.</span>
+        <span class="card-go">Browse the API →</span>
+      </a>
+    </div>
+  </article>
+</Base>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <%= erb(:headers) %>
+    <link rel="stylesheet" href="<%= u = url_for(''); u + (u != '' ? '/' : '') %>css/site-chrome.css" type="text/css">
+  </head>
+  <body>
+    <div id="main_progress" aria-hidden="true"></div>
+
+    <!-- The site header is shared with the Astro pages, so moving between the
+         manual and the API reference does not change the top of the page. -->
+    <header class="site-header">
+      <div class="site-header-inner">
+        <a class="brand" href="<%= ENV.fetch("SITE_BASE", "/") %>">snails</a>
+        <nav class="site-nav">
+          <a href="<%= ENV.fetch("SITE_BASE", "/") %>manual/">Manual</a>
+          <a class="active" href="<%= ENV.fetch("SITE_BASE", "/") %>api/">API</a>
+        </nav>
+      </div>
+    </header>
+
+    <!-- YARD's own layout puts the navigation and the content side by side and
+         fills the viewport. The wrapper gives them the space that is left under
+         the header, so nothing is clipped at the bottom. -->
+    <div class="yard-body">
+      <div class="nav_wrap">
+        <iframe id="nav" src="<%= @nav_url %>?1"></iframe>
+        <div id="resizer"></div>
+      </div>
+
+      <div id="main" tabindex="-1">
+        <div id="header">
+          <%= erb(:breadcrumb) %>
+          <%= erb(:search) %>
+          <div class="clear"></div>
+        </div>
+
+        <div id="content"><%= yieldall %></div>
+
+        <%= erb(:footer) %>
+      </div>
+    </div>
+  </body>
+</html>

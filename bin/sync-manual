@@ -1,0 +1,34 @@
+#!/bin/bash
+# Refresh the vendored manual/ from the source repository (snails-rb/snails).
+#
+#   bin/sync-manual [path/to/snails]   # copy from a local checkout
+#   bin/sync-manual                    # fetch the latest main over https
+#
+# The vendored copy is what the site builds from; the source of truth stays in
+# the snails repo. Commit the refreshed files — the diff is the review.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+DEST="$ROOT/manual"
+REPO="${SNAILS_REPO:-snails-rb/snails}"
+
+cleanup=""
+trap 'rm -rf "${cleanup:-}"' EXIT
+
+if [[ -n ${1:-} ]]; then
+  src="$1/manual"
+  [[ -d $src ]] || { echo "[sync-manual] no manual/ under $1" >&2; exit 1; }
+  echo "[sync-manual] source $1 (local checkout)"
+else
+  cleanup="$(mktemp -d)"
+  git clone --quiet --depth 1 --filter=blob:none --sparse "https://github.com/$REPO" "$cleanup/snails"
+  git -C "$cleanup/snails" sparse-checkout set --no-cone '/manual/'
+  src="$cleanup/snails/manual"
+  echo "[sync-manual] source $REPO@$(git -C "$cleanup/snails" rev-parse --short HEAD)"
+  [[ -d $src ]] || { echo "[sync-manual] no manual/ in the fetched checkout" >&2; exit 1; }
+fi
+
+rm -rf "$DEST"
+mkdir -p "$DEST"
+cp -R "$src/." "$DEST/"
+echo "[sync-manual] manual/ refreshed ($(find "$DEST" -name '*.md' | wc -l | tr -d ' ') chapters)"

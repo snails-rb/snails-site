@@ -1,0 +1,30 @@
+---
+import Base from '../../layouts/Base.astro';
+import { loadChapters, renderMarkdown, url } from '../../lib/manual.mjs';
+
+export function getStaticPaths() {
+  return loadChapters().map((chapter) => ({ params: { slug: chapter.slug }, props: { chapter } }));
+}
+
+const chapters = loadChapters();
+const { chapter } = Astro.props;
+const index = chapters.findIndex((c) => c.slug === chapter.slug);
+const previous = chapters[index - 1] ?? null;
+const next = chapters[index + 1] ?? null;
+---
+<Base chapters={chapters} active={chapter.slug} title={chapter.title} section="manual">
+  <article>
+    <h1>{chapter.title}</h1>
+    {
+      chapter.empty ? (
+        <p class="todo">This chapter is still being written.</p>
+      ) : (
+        <div set:html={renderMarkdown(chapter.body)} />
+      )
+    }
+    <div class="pager">
+      <span>{previous && <a href={url(`/manual/${previous.slug}/`)}>← {previous.title}</a>}</span>
+      <span>{next && <a href={url(`/manual/${next.slug}/`)}>{next.title} →</a>}</span>
+    </div>
+  </article>
+</Base>
