@@ -1,0 +1,34 @@
+name: Refresh the API reference
+
+# Rebuilds and redeploys the site so /api/ follows the current runtime/ tree.
+#
+# The API pages are a build product, not a repository file: bin/build-api fetches
+# runtime/ from snails-rb/snails on every run, so nothing here has to be copied
+# or committed. This job asks site.yml for a build, and site.yml deploys the
+# artifact that build produced.
+#
+# The schedule matches refresh-manual. That job handles changed chapters; this
+# one covers the case where only runtime/ moved, which otherwise reaches the
+# site only when something else happens to trigger a rebuild.
+
+on:
+  schedule:
+    - cron: '37 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  actions: write
+
+concurrency:
+  group: refresh-api
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ask site.yml for a build and deploy
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run site.yml --ref "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}"
