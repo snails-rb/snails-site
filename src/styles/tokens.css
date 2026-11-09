@@ -1,8 +1,14 @@
 /* Palette and type. Dracula, used dark-only: one theme across the landing page,
    the manual, and the API reference. Values are the official ones from
    draculatheme.com (MIT) except `--muted`, which is lightened — the spec's
-   comment colour (#6272A4) is only 3.0:1 on the background, fine for code
-   comments but too weak for body-adjacent text.
+   comment colour (#6272A4) is only 3.0:1 on the background, fine for a code
+   comment but too weak for body-adjacent text.
+
+   The `--syntax-*` roles are the same Dracula values, named by token rather
+   than by hue: the manual's highlighter emits them and `bin/build-api` maps
+   YARD's tokenizer classes onto them, so a keyword is one name across the
+   site. Reference a role when colouring code; a literal hex is how the two
+   sections drift apart.
 
    The body face is JetBrains Mono. Every page mixes prose with commands and
    signatures, and one monospace face keeps code and text on the same grid.
@@ -51,7 +57,23 @@
   --accent: #bd93f9; /* purple, 5.9:1 */
   --accent-soft: #3b3357;
   --accent-strong: #ff79c6; /* pink, hover */
-  --code-comment: #6272a4; /* the spec value, for syntax only */
+
+  /* Dracula's token colours, named by role rather than by hue so the manual's
+     highlighter and the API reference name the same token. `--syntax-comment`
+     keeps the spec value: 3.0:1 is too weak for prose but fine for a comment,
+     which the surrounding line already distinguishes. */
+  --syntax-comment: #6272a4;
+  --syntax-cyan: #8be9fd;
+  --syntax-green: #50fa7b;
+  --syntax-orange: #ffb86c;
+  --syntax-pink: #ff79c6;
+  --syntax-purple: #bd93f9;
+  /* Dracula's error/diff red. The manual's grammars reach it only through a
+     regexp-negation or an invalid token, so it is rare — but a block that
+     hits it must still name a role rather than leak a hex. */
+  --syntax-red: #ff5555;
+  --syntax-yellow: #f1fa8c;
+
   --radius: 8px;
 
   /* Line length in rem (rem is the browser root, 16px, not the 15px body).

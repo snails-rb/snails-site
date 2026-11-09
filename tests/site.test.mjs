@@ -1,11 +1,13 @@
-// The site's own checks. Four things can break silently:
+// The site's own checks. Five things can break silently:
 //
 //   1. a chapter that does not parse, or a chapter link that points nowhere;
 //   2. the API index rendering the source repo's own README instead of the
 //      site's page, which YARD does whenever one sits in its working directory;
 //   3. a root-absolute link that ignores the deploy path, which only shows up
 //      once GitHub Pages serves the site from /snails-site/;
-//   4. a font size that names no step of the type scale.
+//   4. a font size that names no step of the type scale;
+//   5. a code block that lost its highlighting, or a colour that escaped the
+//      palette in tokens.css.
 //
 // Everything here runs against the build output, so it catches what the site
 // actually emits rather than what the templates look like they do.
@@ -15,6 +17,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { loadChapters, renderMarkdown, url } from '../src/lib/manual.mjs';
+import { HIGHLIGHT_LANGUAGES } from '../src/lib/highlight.mjs';
 
 const base = process.env.SITE_BASE ?? '/snails-site/';
 const dist = path.resolve(process.cwd(), 'dist');
@@ -58,7 +61,54 @@ test('renderMarkdown adds heading anchors and rewrites chapter links through url
   assert.match(html, /<h2 id="run-it">/);
   assert.ok(html.includes(`href="${url('/manual/hotkeys/')}#panes"`), html);
   assert.match(html, /<code>bin\/dev<\/code>/);
-  assert.match(html, /<pre><code/);
+  assert.match(html, /<pre class="code language-sh"[^>]*>/);
+});
+
+test('renderMarkdown highlights fenced code and names colours by role', () => {
+  // A fence goes through the highlighter, so the block carries the `code`
+  // class the site styles, each line is a span, and a colour is a
+  // `--syntax-*` reference rather than a hex the theme happened to emit.
+  const html = renderMarkdown('```ruby\ndef x\n  1\nend\n```\n');
+  assert.match(html, /<pre class="code language-ruby"[^>]*>/);
+  assert.match(html, /<span style="color:var\(--syntax-[a-z]+\)">def<\/span>/);
+  assert.match(html, /<span class="line">/);
+  assert.doesNotMatch(html, /color:#[0-9a-fA-F]{3,8}/);
+});
+
+test('a bare fence renders as plain text', () => {
+  // A fence used for a file tree or a session transcript carries no label;
+  // it still gets the block's shape but no token colours.
+  const html = renderMarkdown('```\na < b\n```\n');
+  assert.match(html, /<pre class="code language-text"[^>]*>/);
+  assert.match(html, /a &#x3C; b/);
+});
+
+test('every fence label in the manual has a loaded grammar', () => {
+  // A chapter that fences a language the highlighter does not load would fail
+  // the build inside renderMarkdown. This reports every offender at once, with
+  // the file it came from, rather than failing on the first chapter.
+  const offenders = [];
+  for (const chapter of loadChapters()) {
+    for (const match of chapter.body.matchAll(/^```([a-zA-Z]*)/gm)) {
+      const label = match[1] || 'text';
+      if (!HIGHLIGHT_LANGUAGES.includes(label)) offenders.push(`${chapter.file} → ${label}`);
+    }
+  }
+  assert.deepEqual(offenders, [], `fences with no grammar:\n${offenders.join('\n')}`);
+});
+
+test('no highlighted block carries a literal colour', () => {
+  // A hex in the rendered body means a Dracula scope escaped the role map: the
+  // colour still works, but it left the palette and tokens.css stopped being
+  // the one place a colour is written.
+  const offenders = [];
+  for (const chapter of loadChapters()) {
+    const html = renderMarkdown(chapter.body);
+    for (const match of html.matchAll(/(?:color|background):\s*(#[0-9a-fA-F]{3,8})/g)) {
+      offenders.push(`${chapter.file} → ${match[1]}`);
+    }
+  }
+  assert.deepEqual(offenders, [], `literal colours in highlighted blocks:\n${offenders.join('\n')}`);
 });
 
 test('url() rejects a relative path', () => {
