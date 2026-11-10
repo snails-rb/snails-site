@@ -1,6 +1,18 @@
 ---
 import Base from '../layouts/Base.astro';
 import { url } from '../lib/manual.mjs';
+import { highlightCode } from '../lib/highlight.mjs';
+
+const installCommands = [
+  '# install the CLI',
+  'curl -fsSL https://raw.githubusercontent.com/snails-rb/dist/main/install.sh | bash',
+  '',
+  '# create a project',
+  'snails new demo',
+  '',
+  '# build it and run its tests',
+  'demo/bin/test',
+].join('\n');
 ---
 <Base>
   <article class="front">
@@ -13,9 +25,23 @@ import { url } from '../lib/manual.mjs';
       with JSON.
     </p>
 
-    <pre class="install"><code>curl -fsSL https://raw.githubusercontent.com/snails-rb/dist/main/install.sh | bash
-snails new demo
-demo/bin/test</code></pre>
+    <section class="install">
+      <div class="install-head">
+        <h2 class="install-label">Install</h2>
+        <span class="install-platform">Linux · macOS for development</span>
+      </div>
+
+      <p class="install-intro">
+        The installer needs only <code>curl</code> and <code>tar</code>. From there, <code>snails new</code> creates a project and <code>bin/test</code> compiles it into one native binary and runs it against a real HTTP server — no container in the loop. The first build also needs <code>git</code>, <code>make</code>, and a C compiler with the usual development headers.
+      </p>
+
+      <div class="install-code" data-copy-source set:html={highlightCode(installCommands, 'sh')} />
+
+      <div class="install-foot">
+        <a href={url('/manual/getting-started/')}>Full install guide →</a>
+        <button type="button" class="copy" data-copy hidden>Copy all</button>
+      </div>
+    </section>
 
     <p class="note">Status: alpha. The public API can change between 0.x releases.</p>
 
@@ -32,4 +58,17 @@ demo/bin/test</code></pre>
       </a>
     </div>
   </article>
+
+  <script>
+    const button = document.querySelector('[data-copy]');
+    const source = document.querySelector('[data-copy-source] code');
+    if (button && source && navigator.clipboard) {
+      button.hidden = false;
+      button.addEventListener('click', async () => {
+        await navigator.clipboard.writeText(source.textContent);
+        button.textContent = 'Copied';
+        setTimeout(() => { button.textContent = 'Copy all'; }, 1500);
+      });
+    }
+  </script>
 </Base>
