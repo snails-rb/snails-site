@@ -204,12 +204,12 @@ test('/api/ is the site\'s own index, not the source repo README', () => {
   // carry our text — not the upstream repository's install and CI notes.
   const html = readFileSync(path.join(dist, 'api', 'index.html'), 'utf8');
   assert.ok(
-    html.includes('public surface of the snails runtime'),
+    html.includes('public surface of the Snails runtime'),
     'the API index is not templates/yard/api-index.md',
   );
   assert.ok(
     !html.includes('bash scripts/test-runtime.sh'),
-    'the API index carries the snails repo README instead of the site page',
+    'the API index carries the Snails repo README instead of the site page',
   );
 });
 

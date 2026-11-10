@@ -14,16 +14,16 @@ const withSidebar = chapters.length > 0;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title ? `${title} — snails` : 'snails — web apps that compile to a native binary'}</title>
+    <title>{title ? `${title} — Snails` : 'Snails — web apps that compile to a native binary'}</title>
     <meta
       name="description"
-      content="snails is a framework for building web apps that compile to a single native binary. You write ordinary Ruby; snails turns it into one binary."
+      content="Snails is a framework for building web apps that compile to a single native binary. You write ordinary Ruby; Snails turns it into one binary."
     />
   </head>
   <body>
     <header class="site-header">
       <div class="site-header-inner">
-        <a class="brand" href={url('/')}>snails</a>
+        <a class="brand" href={url('/')}>Snails</a>
         <nav class="site-nav">
           <a class={section === 'manual' ? 'active' : ''} href={url('/manual/')}>Manual</a>
           <a class={section === 'api' ? 'active' : ''} href={url('/api/')}>API</a>

@@ -1,6 +1,6 @@
 # snails-site
 
-The official snails site: a landing page, the manual, and the API reference, built as one static site.
+The official Snails site: a landing page, the manual, and the API reference, built as one static site.
 
 Live at <https://snails-rb.github.io/snails-site/> (GitHub Pages, served from the repository path).
 
