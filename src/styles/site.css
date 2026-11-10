@@ -264,7 +264,9 @@ article strong {
   background: var(--bg-deep);
 }
 
-.front .install-head {
+/* Both landing sections share this header bar, which is why the classes are
+   named for the part rather than for the install panel. */
+.front .section-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -273,10 +275,10 @@ article strong {
   border-bottom: 1px solid var(--line);
 }
 
-/* The panel's own heading: the landing page's h1 is the hero, so this is the
-   only h2 on the page and it should read as a label, not as a section title.
-   The resets undo the article's h2 rule (margin, rule line, heading step). */
-.front .install-label {
+/* The h1 is the hero, so a section heading reads as a label rather than a
+   second title. The resets undo the article's h2 rule (margin, rule line,
+   heading step). */
+.front .section-label {
   margin: 0;
   padding: 0;
   border: none;
@@ -288,7 +290,7 @@ article strong {
   text-transform: uppercase;
 }
 
-.front .install-platform {
+.front .section-meta {
   color: var(--muted);
   font-size: var(--text-2xs);
 }
@@ -359,6 +361,190 @@ article strong {
   margin-bottom: 3rem;
   color: var(--muted);
   font-size: var(--text-sm);
+}
+
+/* The performance section. It carries the numbers the benchmark produces, so
+   it borrows the install panel's frame and bar-for-bar layout rather than
+   inventing a second visual language on the same page. */
+.front .perf {
+  max-width: var(--measure);
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-deep);
+}
+
+.front .perf-lead {
+  margin: 0;
+  padding: 0.875rem 1rem 0;
+  color: var(--fg);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-heading);
+  line-height: var(--leading-heading);
+}
+
+.front .perf-intro {
+  margin: 0;
+  padding: 0.5rem 1rem 0;
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+/* The chart is the section's evidence, so it sits on the panel's own surface
+   and takes a fixed label column: the three target names are the axis. */
+.front .chart {
+  margin: 1rem 1rem 0;
+  padding: 0.875rem 1rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.front .chart-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  color: var(--fg);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.front .chart-aside {
+  color: var(--muted);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.front .bars {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.front .bar-row {
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 1fr) 5rem;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: var(--text-sm);
+}
+
+.front .bar-name {
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The winning row is the only one that takes the accent, so the reader's eye
+   lands on the claim before the bars. */
+.front .bar-row.is-highest .bar-name {
+  color: var(--fg);
+}
+
+.front .bar-track {
+  height: 0.75rem;
+  border-radius: 3px;
+  background: var(--bg-deep);
+}
+
+.front .bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--line);
+}
+
+.front .bar-row.is-highest .bar-fill {
+  background: var(--accent);
+}
+
+.front .bar-value {
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.front .bar-row:not(.is-highest) .bar-value {
+  color: var(--muted);
+}
+
+/* Two figures that the chart cannot show: start-up and memory. They are a
+   definition list because each is a name and its value. */
+.front .perf-figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 1rem;
+  margin: 1rem 1rem 0;
+}
+
+.front .perf-figure {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.front .perf-figure dt {
+  color: var(--muted);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.front .perf-figure dd {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.front .perf-value {
+  color: var(--accent-strong);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-heading);
+  font-variant-numeric: tabular-nums;
+}
+
+.front .perf-compare {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+/* The source line is what makes the numbers checkable: the run, the conditions
+   and where the raw files live. */
+.front .perf-source {
+  margin: 1rem 1rem 0;
+  color: var(--muted);
+  font-size: var(--text-xs);
+  line-height: var(--leading-prose);
+}
+
+.front .perf-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-top: 1rem;
+  padding: 0.7rem 1rem;
+  border-top: 1px solid var(--line);
+  font-size: var(--text-sm);
+}
+
+.front .perf-foot a {
+  text-decoration: none;
+}
+
+.front .perf-foot a:hover {
+  text-decoration: underline;
 }
 
 .cards {
@@ -455,5 +641,28 @@ article strong {
 
   .sidebar li.active a {
     border-left: none;
+  }
+
+  /* The chart's three columns need the width of the panel, which a phone does
+     not have. The name and value move above the bar, so the bar keeps the full
+     width and still shows the ratio between the three targets. */
+  .front .bar-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'name value'
+      'track track';
+    gap: 0.25rem 0.75rem;
+  }
+
+  .front .bar-name {
+    grid-area: name;
+  }
+
+  .front .bar-track {
+    grid-area: track;
+  }
+
+  .front .bar-value {
+    grid-area: value;
   }
 }
