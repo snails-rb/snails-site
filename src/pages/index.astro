@@ -16,7 +16,10 @@ const installCommands = [
 ].join('\n');
 
 const figures = performanceFigures();
-const busiest = Math.max(...figures.rows.map((row) => row.requests));
+const fastest = Math.max(...figures.series.map((target) => target.requests));
+const latency = figures.rowValues('Response time, 95th percentile');
+const memory = figures.rowValues('Memory under load');
+const boot = figures.rowValues('Launch to first answer');
 ---
 <Base>
   <article class="front">
@@ -30,9 +33,9 @@ const busiest = Math.max(...figures.rows.map((row) => row.requests));
     </p>
 
     <section class="install">
-      <div class="section-head">
-        <h2 class="section-label">Install</h2>
-        <span class="section-meta">Linux · macOS for development</span>
+      <div class="install-head">
+        <h2 class="install-label">Install</h2>
+        <span class="install-platform">Linux · macOS for development</span>
       </div>
 
       <p class="install-intro">
@@ -50,55 +53,70 @@ const busiest = Math.max(...figures.rows.map((row) => row.requests));
     <p class="note">Status: alpha. The public API can change between 0.x releases.</p>
 
     <section class="perf" aria-labelledby="performance">
-      <div class="section-head">
-        <h2 class="section-label" id="performance">Performance</h2>
-        <span class="section-meta">8 cores · framework defaults</span>
-      </div>
+      <h2 class="perf-title" id="performance">Performance</h2>
 
-      <p class="perf-lead">{figures.clusterRatio}× the requests of Rails Cluster Mode, {figures.railsRatio}× stock Rails.</p>
-
-      <p class="perf-intro">
-        Snails compiles to native code, so one process runs request handlers on every core the machine gives it. Rails uses more than one core only by running a worker process per core — cluster mode — and each worker keeps its own copy of the application in memory. Both run at framework defaults and answer the same <code>GET /up</code> with the same JSON body.
+      <p class="perf-lede">
+        Snails delivers <strong>{figures.clusterRatio}×</strong> the throughput of Rails in cluster
+        mode and <strong>{figures.defaultsRatio}×</strong> that of a default Rails app — the same
+        <code>GET /up</code> on the same 8-core machine. It compiles to native code without Ruby's
+        GVL, so one process uses every core; Rails needs a worker process per core to use the same
+        hardware.
       </p>
 
-      <figure class="chart">
-        <figcaption class="chart-title">
-          Requests per second <span class="chart-aside">higher is better</span>
-        </figcaption>
-        <ul class="bars">
+      <figure class="perf-chart">
+        <figcaption>Requests per second · 32 connections · higher is better</figcaption>
+        <ul>
           {
-            figures.rows.map((row) => (
-              <li class:list={['bar-row', { 'is-highest': row.requests === busiest }]}>
-                <span class="bar-name">{row.name}</span>
-                <span class="bar-track" aria-hidden="true">
-                  <span class="bar-fill" style={`width: ${Math.round((row.requests / busiest) * 100)}%`} />
+            figures.series.map((target) => (
+              <li class:list={['perf-row', { 'is-fastest': target.requests === fastest }]}>
+                <span class="perf-row-head">
+                  <span class="perf-row-label">{target.label}</span>
+                  <span class="perf-row-value">{target.requests.toLocaleString('en-US')}</span>
                 </span>
-                <span class="bar-value">{row.requests.toLocaleString('en-US')}</span>
+                <span class="perf-row-bar" aria-hidden="true">
+                  <span
+                    class="perf-row-fill"
+                    style={`width: ${Math.round((target.requests / fastest) * 100)}%`}
+                  />
+                </span>
               </li>
             ))
           }
         </ul>
       </figure>
 
-      <dl class="perf-figures">
-        <div class="perf-figure">
-          <dt>Launch to first answer</dt>
-          <dd><span class="perf-value">{figures.launch.snails}</span><span class="perf-compare">Rails: {figures.launch.rails}</span></dd>
+      <dl class="perf-stats">
+        <div class="perf-stat">
+          <dt>p95 latency</dt>
+          <dd>
+            <span class="perf-number">{latency[0]}</span>
+            <span class="perf-note">Rails (cluster mode) {latency[1]}</span>
+          </dd>
         </div>
-        <div class="perf-figure">
-          <dt>Peak memory under load</dt>
-          <dd><span class="perf-value">{figures.memory.snails}</span><span class="perf-compare">Rails Cluster Mode: {figures.memory.cluster}</span></dd>
+        <div class="perf-stat">
+          <dt>Startup time</dt>
+          <dd>
+            <span class="perf-number">{boot[0]}</span>
+            <span class="perf-note">Rails (default) {boot[2]}</span>
+          </dd>
+        </div>
+        <div class="perf-stat">
+          <dt>Memory under load</dt>
+          <dd>
+            <span class="perf-number">{memory[0]}</span>
+            <span class="perf-note">Rails (cluster mode) {memory[1]}</span>
+          </dd>
         </div>
       </dl>
 
-      <p class="perf-source">
-        Medians of three 15-second runs at 32 concurrent connections on one 8-core machine, request logging off; launch time from five interleaved rounds. The route touches no database or view, so this compares the request path — absolute numbers belong to that hardware, and the ratios are what travel.
+      <p class="perf-method">
+        Medians of three 15-second runs with request logging off; startup time from five runs. The
+        route serves JSON and touches no database or view, so this measures the request path. Ratios
+        transfer between machines; absolute figures belong to the machine that ran them. See{' '}
+        <a href={url('/manual/welcome-to-snails/#how-it-compares')}>How it compares</a> in the manual
+        for the full table, and <a href="https://github.com/snails-rb/snails-benchmark">snails-benchmark</a>
+        for the method and raw results.
       </p>
-
-      <div class="perf-foot">
-        <a href={url('/manual/welcome-to-snails/#how-it-compares')}>Full comparison →</a>
-        <a href="https://github.com/snails-rb/snails-benchmark">Method and raw results →</a>
-      </div>
     </section>
 
     <div class="cards">

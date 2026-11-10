@@ -56,7 +56,7 @@ The `--syntax-*` roles in `src/styles/tokens.css` are the only place a code colo
 
 The performance section on `/` reads its numbers from the manual's comparison table (`manual/01-welcome-to-snails.md`, the "How it compares" table) through `src/lib/performance.mjs` — it does not carry a second copy. The manual is refreshed from the snails repo on a schedule, so a copied set of figures would keep serving the old values after each refresh.
 
-The loader fails the build when the table stops matching what it expects: a renamed column, a missing row, or a request count that is not a number. That turns silent drift into a build failure, which is the point — the fix is to update the loader together with the manual.
+The build fails when the table stops matching what the page reads: a renamed column, a missing row, or a request count that is not a number. That turns silent drift into a build failure, which is the point — the fix is to update the loader together with the manual.
 
 `bin/sync-manual` brings in new figures; nothing on the landing page needs editing for them, and the ratios are computed from the table rather than written in it.
 
