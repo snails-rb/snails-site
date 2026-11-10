@@ -250,8 +250,109 @@ article strong {
   font-size: var(--text-base);
 }
 
+/* The install panel. A landing page hands over three commands, so the panel
+   says what each one does and who can run them before the reader pastes. The
+   block keeps the article's code styling and adds a hairline frame around it,
+   which is what the surrounding copy refers to as one thing. */
 .front .install {
-  margin-bottom: 1rem;
+  /* The update line is a long URL, so the panel takes the full measure rather
+     than the narrower lede column: at 38rem the command wraps mid-token. */
+  max-width: var(--measure);
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-deep);
+}
+
+.front .install-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+/* The panel's own heading: the landing page's h1 is the hero, so this is the
+   only h2 on the page and it should read as a label, not as a section title.
+   The resets undo the article's h2 rule (margin, rule line, heading step). */
+.front .install-label {
+  margin: 0;
+  padding: 0;
+  border: none;
+  color: var(--syntax-pink);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-heading);
+  letter-spacing: 0.08em;
+  line-height: var(--leading-heading);
+  text-transform: uppercase;
+}
+
+.front .install-platform {
+  color: var(--muted);
+  font-size: var(--text-2xs);
+}
+
+/* The intro is prose that explains the block, so it takes the body step and
+   the muted colour: it should be read once, then the block is the thing kept. */
+.front .install-intro {
+  margin: 0;
+  padding: 0.875rem 1rem 0;
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+/* The block sits inside the panel, so it drops its own frame and keeps only
+   the code shape. The selectors name the article's own `pre` rule explicitly
+   because that rule is more specific than a bare class. */
+.front .install-code pre {
+  margin: 0;
+  padding: 0.75rem 1rem 1rem;
+  border: none;
+  border-radius: 0;
+  background: none;
+  /* The install line is one long URL. Wrapping it keeps the panel a single
+     readable column instead of a horizontal scroller; the text stays one
+     line, so the copy button still hands over the command unchanged. */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.front .install-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 1rem;
+  border-top: 1px solid var(--line);
+  font-size: var(--text-sm);
+}
+
+.front .install-foot a {
+  text-decoration: none;
+}
+
+.front .install-foot a:hover {
+  text-decoration: underline;
+}
+
+/* The copy button is a control, not content: it appears only when the
+   clipboard API is available (the script removes `hidden`), so no reader
+   clicks a button that cannot work. */
+.front .copy {
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--fg);
+  font-family: inherit;
+  font-size: var(--text-2xs);
+  cursor: pointer;
+}
+
+.front .copy:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .front .note {
