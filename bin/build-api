@@ -746,7 +746,7 @@ render() {
       --template-path "$ROOT/templates/yard" \
       --readme "api-index.md" \
       --exclude 'runtime/tep/' \
-      --title 'snails API' \
+      --title 'Snails API' \
       "${rbs_files[@]}" "${rb_files[@]}" )
   copy_chrome "$dest"
 }
