@@ -273,9 +273,9 @@ article strong {
   border-bottom: 1px solid var(--line);
 }
 
-/* The panel's own heading: the landing page's h1 is the hero, so this is the
-   only h2 on the page and it should read as a label, not as a section title.
-   The resets undo the article's h2 rule (margin, rule line, heading step). */
+/* The h1 is the hero, so a panel heading reads as a label rather than a
+   second title. The resets undo the article's h2 rule (margin, rule line,
+   heading step). */
 .front .install-label {
   margin: 0;
   padding: 0;
@@ -359,6 +359,161 @@ article strong {
   margin-bottom: 3rem;
   color: var(--muted);
   font-size: var(--text-sm);
+}
+
+/* The performance section is laid out as an editorial benchmark, not as a
+   framed panel: one rule above, full-width bars, and a spec strip of the three
+   numbers a deployment cares about. The install block above is the page's only
+   framed element, so the two do not read as the same component. */
+.front .perf {
+  max-width: var(--measure);
+  margin-bottom: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--line);
+}
+
+.front .perf-title {
+  margin: 0 0 0.5rem;
+  padding: 0;
+  border: none;
+  font-size: var(--text-xl);
+  font-weight: var(--weight-heading);
+  line-height: var(--leading-heading);
+  letter-spacing: -0.01em;
+}
+
+.front .perf-lede {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-base);
+  line-height: var(--leading-prose);
+}
+
+.front .perf-lede strong {
+  color: var(--fg);
+  font-weight: var(--weight-heading);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The chart: each target gets a label/value line and a full-width bar under
+   it, so the three lengths are compared on one baseline rather than through a
+   boxed table. */
+.front .perf-chart {
+  margin: 2rem 0 0;
+}
+
+.front .perf-chart figcaption {
+  color: var(--muted);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.front .perf-chart ul {
+  display: grid;
+  gap: 0.875rem;
+  margin: 0.875rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.front .perf-row-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: var(--text-sm);
+}
+
+.front .perf-row-label {
+  color: var(--muted);
+}
+
+.front .perf-row-value {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.front .perf-row.is-fastest .perf-row-label,
+.front .perf-row.is-fastest .perf-row-value {
+  color: var(--fg);
+}
+
+.front .perf-row-bar {
+  display: block;
+  height: 0.5rem;
+  margin-top: 0.35rem;
+  border-radius: 2px;
+  background: var(--line);
+}
+
+.front .perf-row-fill {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--muted);
+}
+
+.front .perf-row.is-fastest .perf-row-fill {
+  background: var(--accent);
+}
+
+/* The three figures a bar cannot show. Hairlines separate the columns instead
+   of a card border, which keeps the section on the page. */
+.front .perf-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 2rem 0 0;
+  padding: 1.25rem 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.front .perf-stat {
+  padding: 0 1.25rem;
+  border-left: 1px solid var(--line);
+}
+
+.front .perf-stat:first-child {
+  padding-left: 0;
+  border-left: none;
+}
+
+.front .perf-stat:last-child {
+  padding-right: 0;
+}
+
+.front .perf-stat dt {
+  color: var(--muted);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.front .perf-stat dd {
+  display: grid;
+  gap: 0.15rem;
+  margin: 0.35rem 0 0;
+}
+
+.front .perf-number {
+  color: var(--fg);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-heading);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--leading-tight);
+}
+
+.front .perf-note {
+  color: var(--muted);
+  font-size: var(--text-xs);
+}
+
+.front .perf-method {
+  margin: 1rem 0 0;
+  color: var(--muted);
+  font-size: var(--text-xs);
+  line-height: var(--leading-prose);
 }
 
 .cards {
@@ -455,5 +610,23 @@ article strong {
 
   .sidebar li.active a {
     border-left: none;
+  }
+
+  /* The stat strip has three columns on a wide screen and one under 60rem: at
+     a phone width the numbers wrap inside columns too narrow to read. */
+  .front .perf-stats {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+    padding: 1rem 0;
+  }
+
+  .front .perf-stat {
+    padding: 0;
+    border-left: none;
+  }
+
+  .front .perf-stat + .perf-stat {
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
   }
 }

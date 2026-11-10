@@ -14,11 +14,30 @@ BASE="${SITE_BASE:-/snails-site/}"
 NAME="${BASE#/}"
 NAME="${NAME%/}"
 
+# Astro empties dist/ at the start of a build and fills it back in, so a copy
+# taken while a build runs can hold _astro/ and api/ but no index.html. Serving
+# that copy shows a directory listing instead of the site, which looks like a
+# page bug. Refuse to stage a dist that has no landing page, and refuse one
+# whose build is still in progress.
 [[ -d $ROOT/dist ]] || { echo "[preview-pages] no dist/ — run 'npm run build' first" >&2; exit 1; }
+[[ -f $ROOT/dist/index.html ]] || {
+  echo "[preview-pages] dist/index.html is missing — the build is still running or was interrupted; wait for 'npm run build' to finish" >&2
+  exit 1
+}
+[[ -e $ROOT/dist/.prerender ]] && {
+  echo "[preview-pages] dist/.prerender is present — a build is running or was interrupted; let 'npm run build' finish, or delete dist/ and rebuild" >&2
+  exit 1
+}
 
 STAGE="$(mktemp -d)"
 trap 'rm -rf "$STAGE"' EXIT
 cp -R "$ROOT/dist" "$STAGE/$NAME"
+# The copy itself is not atomic: a build that starts mid-copy still yields an
+# incomplete stage, so verify what was staged rather than what was checked.
+[[ -f $STAGE/$NAME/index.html ]] || {
+  echo "[preview-pages] copied dist/ has no index.html — a build was running during the copy; rerun it" >&2
+  exit 1
+}
 
 echo "[preview-pages] http://localhost:$PORT$BASE"
 echo "[preview-pages] serving the built output from $BASE — Ctrl-C to stop"
