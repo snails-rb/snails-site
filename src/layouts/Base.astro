@@ -5,8 +5,10 @@ import '../styles/site-header.css';
 import { url } from '../lib/manual.mjs';
 
 // The header is on every page; the chapter sidebar belongs to the manual only.
-// A page that wants the sidebar passes the chapter list it should show.
-const { chapters = [], active = null, title = null, section = null } = Astro.props;
+// A page that wants the sidebar passes the chapter list it should show. The
+// landing page asks for the wider shell so the hero can put code beside the
+// claim; the manual keeps its reading column.
+const { chapters = [], active = null, title = null, section = null, wide = false } = Astro.props;
 const withSidebar = chapters.length > 0;
 ---
 <!doctype html>
@@ -14,10 +16,10 @@ const withSidebar = chapters.length > 0;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title ? `${title} — Snails` : 'Snails — web apps that compile to a native binary'}</title>
+    <title>{title ? `${title} — Snails` : 'Snails — Ruby web apps, one native binary'}</title>
     <meta
       name="description"
-      content="Snails is a framework for building web apps that compile to a single native binary. You write ordinary Ruby; Snails turns it into one binary."
+      content="Snails is a Rails-like Ruby framework for JSON APIs. Your app compiles to a single native binary, with no Ruby runtime on the server."
     />
   </head>
   <body>
@@ -31,7 +33,7 @@ const withSidebar = chapters.length > 0;
       </div>
     </header>
 
-    <div class={withSidebar ? 'page with-sidebar' : 'page'}>
+    <div class={withSidebar ? 'page with-sidebar' : wide ? 'page wide' : 'page'}>
       {
         withSidebar && (
           <nav class="sidebar">

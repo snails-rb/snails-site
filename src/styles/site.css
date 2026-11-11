@@ -49,14 +49,20 @@ a:hover {
   padding: 3.5rem 1.5rem 6rem;
 }
 
+/* The landing page puts the claim beside code, so it needs more room than the
+   manual's reading column. Prose on the page still stops at --measure. */
+.page.wide {
+  max-width: 72rem;
+}
+
 .page.with-sidebar {
   display: grid;
   grid-template-columns: 16rem minmax(0, var(--measure));
   gap: 3.5rem;
-  max-width: 78rem;
-  /* The sidebar's left edge should line up with the header brand, so the
-     block is not centered on its tracks — the 1.5rem padding and the auto
-     margins do the centering. */
+  max-width: 72rem;
+  /* The sidebar's left edge lines up with the header brand and the landing
+     page, so the block is not centered on its tracks — the 1.5rem padding and
+     the auto margins do the centering. */
   align-items: start;
 }
 
@@ -224,7 +230,41 @@ article strong {
 
 /* --- Landing ------------------------------------------------------------ */
 
+/* The landing page is one column of prose inside a wider shell. The hero puts
+   the claim beside the code a reader will write; a soft glow behind it keeps
+   the top of the page from reading as a plain document. */
+.front {
+  position: relative;
+}
+
+.front::before {
+  content: '';
+  position: absolute;
+  top: -4rem;
+  right: 0;
+  width: 34rem;
+  height: 30rem;
+  background: radial-gradient(circle, var(--accent-soft), transparent 68%);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.front > * {
+  position: relative;
+}
+
+.front .hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: 3.5rem;
+  align-items: center;
+  padding: 1rem 0 4rem;
+}
+
 .front .eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   margin: 0 0 1rem;
   color: var(--syntax-green);
   font-size: var(--text-2xs);
@@ -232,114 +272,129 @@ article strong {
   text-transform: uppercase;
 }
 
+.front .status {
+  padding: 0.12rem 0.45rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--syntax-orange);
+}
+
 .front h1 {
-  max-width: 36rem;
-  margin-bottom: 1.25rem;
-  font-size: var(--text-2xl);
+  max-width: 34rem;
+  margin: 0 0 1.25rem;
+  font-size: var(--text-3xl);
   font-weight: var(--weight-heading);
   line-height: var(--leading-tight);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 
-/* The lede reads as prose, not as a headline: same 15px as the body, only
-   dimmed. A bigger step would compete with the h1. */
+/* The lede explains the claim in two sentences. It takes the h3 step, not the
+   body step, so the hero keeps its hierarchy above the feature cards. */
 .front .lede {
-  max-width: 38rem;
-  margin-bottom: 2rem;
+  max-width: 34rem;
+  margin: 0 0 1.75rem;
   color: var(--muted);
-  font-size: var(--text-base);
+  font-size: var(--text-lg);
+  line-height: var(--leading-prose);
 }
 
-/* The install panel. A landing page hands over three commands, so the panel
-   says what each one does and who can run them before the reader pastes. The
-   block keeps the article's code styling and adds a hairline frame around it,
-   which is what the surrounding copy refers to as one thing. */
-.front .install {
-  /* The update line is a long URL, so the panel takes the full measure rather
-     than the narrower lede column: at 38rem the command wraps mid-token. */
-  max-width: var(--measure);
-  margin-bottom: 1.25rem;
+.front .hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.75rem;
+}
+
+.front .button {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.55rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-heading);
+  text-decoration: none;
+}
+
+.front .button.primary {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.front .button.primary:hover {
+  background: var(--accent-strong);
+  color: var(--bg);
+}
+
+.front .button.quiet {
+  border-color: var(--line);
+  color: var(--fg);
+}
+
+.front .button.quiet:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* The install command is the first action a reader can take, so it sits in the
+   hero rather than behind a separate section. The frame keeps the command one
+   object and gives the copy button a stable place. */
+.front .install-bar {
+  max-width: 34rem;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--bg-deep);
 }
 
-.front .install-head {
+.front .install-bar-head {
   display: flex;
-  align-items: baseline;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.6rem 1rem;
+  padding: 0.45rem 0.75rem;
   border-bottom: 1px solid var(--line);
-}
-
-/* The h1 is the hero, so a panel heading reads as a label rather than a
-   second title. The resets undo the article's h2 rule (margin, rule line,
-   heading step). */
-.front .install-label {
-  margin: 0;
-  padding: 0;
-  border: none;
-  color: var(--syntax-pink);
+  color: var(--muted);
   font-size: var(--text-2xs);
-  font-weight: var(--weight-heading);
-  letter-spacing: 0.08em;
-  line-height: var(--leading-heading);
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-.front .install-platform {
-  color: var(--muted);
-  font-size: var(--text-2xs);
-}
-
-/* The intro is prose that explains the block, so it takes the body step and
-   the muted colour: it should be read once, then the block is the thing kept. */
-.front .install-intro {
-  margin: 0;
-  padding: 0.875rem 1rem 0;
-  color: var(--muted);
-  font-size: var(--text-md);
-}
-
-/* The block sits inside the panel, so it drops its own frame and keeps only
-   the code shape. The selectors name the article's own `pre` rule explicitly
-   because that rule is more specific than a bare class. */
-.front .install-code pre {
-  margin: 0;
-  padding: 0.75rem 1rem 1rem;
-  border: none;
-  border-radius: 0;
-  background: none;
-  /* The install line is one long URL. Wrapping it keeps the panel a single
-     readable column instead of a horizontal scroller; the text stays one
-     line, so the copy button still hands over the command unchanged. */
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-
-.front .install-foot {
+.front .install-bar-body {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.7rem 1rem;
-  border-top: 1px solid var(--line);
-  font-size: var(--text-sm);
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
 }
 
-.front .install-foot a {
-  text-decoration: none;
+.front .install-bar code {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  background: none;
+  color: var(--syntax-green);
+  font-size: var(--text-xs);
+  overflow-wrap: normal;
+  word-break: normal;
 }
 
-.front .install-foot a:hover {
-  text-decoration: underline;
+.front .hero-note,
+.front .hero-status {
+  max-width: 34rem;
+  margin: 0.85rem 0 0;
+  color: var(--muted);
+  font-size: var(--text-xs);
+  line-height: var(--leading-prose);
+}
+
+.front .hero-status {
+  color: var(--syntax-orange);
 }
 
 /* The copy button is a control, not content: it appears only when the
    clipboard API is available (the script removes `hidden`), so no reader
    clicks a button that cannot work. */
 .front .copy {
+  flex: none;
   padding: 0.2rem 0.6rem;
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -355,10 +410,154 @@ article strong {
   color: var(--accent);
 }
 
-.front .note {
-  margin-bottom: 3rem;
+/* The demo is a real file pair, not a screenshot: a reader can map each block
+   to the file it lives in and then run the test command at the bottom. */
+.front .hero-demo {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-deep);
+  overflow: hidden;
+  box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.25);
+}
+
+.front .demo-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0.9rem;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
   color: var(--muted);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.04em;
+}
+
+.front .demo-head:first-child {
+  border-top: none;
+}
+
+.front .demo-lang {
+  color: var(--syntax-pink);
+}
+
+.front .demo-code pre {
+  margin: 0;
+  padding: 0.8rem 1rem;
+  border: none;
+  border-radius: 0;
+  background: none;
+  line-height: 1.6;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.front .demo-code pre code {
+  font-size: var(--text-xs);
+}
+
+.front .demo-code pre .line {
+  display: inline;
+}
+
+.front .demo-term {
+  padding: 0.7rem 0.9rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: var(--text-xs);
+  line-height: 1.7;
+}
+
+.front .demo-prompt {
+  color: var(--accent);
+}
+
+.front .demo-ok {
+  color: var(--syntax-green);
+}
+
+/* The feature grid answers "what do I get" before the benchmark backs up the
+   speed claim. Each card links to the chapter that owns its detail. */
+.front .features {
+  margin-bottom: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--line);
+}
+
+.front .features h2 {
+  margin: 0 0 0.5rem;
+  padding: 0;
+  border: none;
+  font-size: var(--text-xl);
+  font-weight: var(--weight-heading);
+  line-height: var(--leading-heading);
+  letter-spacing: -0.01em;
+}
+
+.front .section-lede {
+  max-width: var(--measure);
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-base);
+  line-height: var(--leading-prose);
+}
+
+.front .feature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.front .feature {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.25rem 1.375rem 1.375rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.front .feature:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.front .feature-title {
+  margin: 0;
+  color: var(--syntax-cyan);
+  font-size: var(--text-base);
+  font-weight: var(--weight-heading);
+  line-height: var(--leading-heading);
+}
+
+.front .feature-body {
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+.front .feature-body code {
+  color: var(--syntax-orange);
+}
+
+.front .feature-go {
+  margin-top: 0.35rem;
+  color: var(--syntax-green);
   font-size: var(--text-sm);
+}
+
+.front .scope {
+  max-width: var(--measure);
+  margin: 1.25rem 0 0;
+  color: var(--muted);
+  font-size: var(--text-xs);
+  line-height: var(--leading-prose);
 }
 
 /* The performance section is laid out as an editorial benchmark, not as a
@@ -366,8 +565,7 @@ article strong {
    numbers a deployment cares about. The install block above is the page's only
    framed element, so the two do not read as the same component. */
 .front .perf {
-  max-width: var(--measure);
-  margin-bottom: 3rem;
+  margin-bottom: 4rem;
   padding-top: 2rem;
   border-top: 1px solid var(--line);
 }
@@ -383,6 +581,7 @@ article strong {
 }
 
 .front .perf-lede {
+  max-width: var(--measure);
   margin: 0;
   color: var(--muted);
   font-size: var(--text-base);
@@ -510,6 +709,7 @@ article strong {
 }
 
 .front .perf-method {
+  max-width: var(--measure);
   margin: 1rem 0 0;
   color: var(--muted);
   font-size: var(--text-xs);
@@ -590,6 +790,24 @@ article strong {
     gap: 1.5rem;
   }
 
+  .front .hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+    padding-bottom: 3rem;
+  }
+
+  /* Stacked, the demo would otherwise stretch to the full landing width and
+     leave most of its rows empty; keep it the width of a comfortable editor. */
+  .front .hero-demo {
+    max-width: 44rem;
+  }
+
+  .front::before {
+    right: 0;
+    width: 24rem;
+    height: 24rem;
+  }
+
   .sidebar {
     position: static;
     padding-bottom: 0.5rem;
@@ -628,5 +846,34 @@ article strong {
   .front .perf-stat + .perf-stat {
     padding-top: 1rem;
     border-top: 1px solid var(--line);
+  }
+}
+
+@media (max-width: 48rem) {
+  .front .feature-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 40rem) {
+  /* A 40px headline leaves too few characters per line on a phone; the manual
+     h1 step is the right size once the hero is one column. */
+  .front h1 {
+    font-size: var(--text-2xl);
+  }
+
+  .front .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .front .button {
+    justify-content: center;
+  }
+
+  /* Phone widths cannot hold the 13px code step without a horizontal scroll
+     for every line; one step down keeps the whole example in view. */
+  .front .demo-code pre code {
+    font-size: var(--text-2xs);
   }
 }

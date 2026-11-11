@@ -4,16 +4,34 @@ import { url } from '../lib/manual.mjs';
 import { highlightCode } from '../lib/highlight.mjs';
 import { performanceFigures } from '../lib/performance.mjs';
 
-const installCommands = [
-  '# install the CLI',
-  'curl -fsSL https://raw.githubusercontent.com/snails-rb/dist/main/install.sh | bash',
-  '',
-  '# create a project',
-  'snails new demo',
-  '',
-  '# build it and run its tests',
-  'demo/bin/test',
+const routeCode = [
+  '# inside Snails::RouteTable.table',
+  'resources("/posts", PostsController, :json)',
 ].join('\n');
+
+const controllerCode = [
+  'class PostsController < ActionController::API',
+  '  def index',
+  '    render(json: posts)',
+  '  end',
+  '',
+  '  private',
+  '',
+  '  def posts',
+  '    Post.all.map { |post| post_json(post) }',
+  '  end',
+  '',
+  '  def post_json(post)',
+  '    { "id" => post.id, "title" => post.title }',
+  '  end',
+  'end',
+].join('\n');
+
+// Break opportunities inside the install URL keep the command readable on a
+// phone without changing what the copy button hands over: <wbr> carries no
+// text, so textContent is still the one-line command.
+const installCommandHtml =
+  'curl -fsSL <wbr/>https://<wbr/>raw.githubusercontent.com/<wbr/>snails-rb/<wbr/>dist/<wbr/>main/<wbr/>install.sh <wbr/>| bash';
 
 const figures = performanceFigures();
 const fastest = Math.max(...figures.series.map((target) => target.requests));
@@ -21,36 +39,109 @@ const latency = figures.rowValues('Response time, 95th percentile');
 const memory = figures.rowValues('Memory under load');
 const boot = figures.rowValues('Launch to first answer');
 ---
-<Base>
+<Base wide>
   <article class="front">
-    <p class="eyebrow">Ruby → one native binary</p>
-    <h1>Web apps that compile to one native binary</h1>
-    <p class="lede">
-      Snails is a framework for building web apps in ordinary Ruby. Routes, controllers, models,
-      forms — Snails compiles them into a single binary that boots fast and runs anywhere a binary
-      runs. No runtime to install on the server, no asset pipeline, no view layer: your app answers
-      with JSON.
-    </p>
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="status">Alpha</span> Ruby · native binary</p>
+        <h1 id="hero-title">Ruby web apps.<br />One native binary.</h1>
+        <p class="lede">
+          Snails is a Rails-like framework for JSON APIs. Routes, controllers, models,
+          migrations, forms, and jobs are ordinary Ruby; the build compiles them, the framework,
+          and the HTTP server into one executable. It boots in milliseconds and uses every core.
+          No Ruby runtime on the server.
+        </p>
 
-    <section class="install">
-      <div class="install-head">
-        <h2 class="install-label">Install</h2>
-        <span class="install-platform">Linux · macOS for development</span>
+        <div class="hero-actions">
+          <a class="button primary" href={url('/manual/getting-started/')}>Get started</a>
+          <a class="button quiet" href="https://github.com/snails-rb/snails">GitHub ↗</a>
+        </div>
+
+        <div class="install-bar">
+          <div class="install-bar-head">
+            <span>Install the CLI</span>
+            <span>Linux · macOS for development</span>
+          </div>
+          <div class="install-bar-body" data-copy-source>
+            <code set:html={installCommandHtml} />
+            <button type="button" class="copy" data-copy hidden>Copy</button>
+          </div>
+        </div>
+
+        <p class="hero-note">
+          After that, <code>snails new demo</code> creates a project. The installer needs
+          <code>curl</code> and <code>tar</code>; the first build also needs <code>git</code>,
+          <code>make</code>, and a C compiler with the usual development headers. <a href={url('/manual/getting-started/')}>Full install guide →</a>
+        </p>
+        <p class="hero-status">Alpha. The public API can change between 0.x releases.</p>
       </div>
 
-      <p class="install-intro">
-        The installer needs only <code>curl</code> and <code>tar</code>. From there, <code>snails new</code> creates a project and <code>bin/test</code> compiles it into one native binary and runs it against a real HTTP server — no container in the loop. The first build also needs <code>git</code>, <code>make</code>, and a C compiler with the usual development headers.
-      </p>
-
-      <div class="install-code" data-copy-source set:html={highlightCode(installCommands, 'sh')} />
-
-      <div class="install-foot">
-        <a href={url('/manual/getting-started/')}>Full install guide →</a>
-        <button type="button" class="copy" data-copy hidden>Copy all</button>
+      <div class="hero-demo" role="group" aria-label="A Snails route, controller, and test run">
+        <div class="demo-head">
+          <span class="demo-file">config/routes.rb</span>
+          <span class="demo-lang">Ruby</span>
+        </div>
+        <div class="demo-code" set:html={highlightCode(routeCode, 'ruby')} />
+        <div class="demo-head">
+          <span class="demo-file">app/controllers/posts_controller.rb</span>
+        </div>
+        <div class="demo-code" set:html={highlightCode(controllerCode, 'ruby')} />
+        <div class="demo-term" role="group" aria-label="Test output">
+          <div><span class="demo-prompt">$</span> bin/test</div>
+          <div><span class="demo-ok">ok</span> posts_test.rb</div>
+          <div><span class="demo-ok">5/5 passed</span></div>
+        </div>
       </div>
     </section>
 
-    <p class="note">Status: alpha. The public API can change between 0.x releases.</p>
+    <section class="features" aria-labelledby="features-title">
+      <p class="eyebrow">Why Snails</p>
+      <h2 id="features-title">Rails conventions, one binary.</h2>
+      <p class="section-lede">
+        Snails keeps the Rails conventions an API needs. The view layer is gone, and the server
+        runs without Ruby.
+      </p>
+
+      <div class="feature-grid">
+        <a class="feature" href={url('/manual/coming-from-rails/')}>
+          <h3 class="feature-title">The Rails shape</h3>
+          <span class="feature-body">
+            Routes, controllers, migrations, forms, mail, and jobs keep the shape you know.
+            Models are plain classes over your tables, so the SQL stays visible.
+          </span>
+          <span class="feature-go">Coming from Rails →</span>
+        </a>
+        <a class="feature" href={url('/manual/deploying/')}>
+          <h3 class="feature-title">One native binary</h3>
+          <span class="feature-body">
+            Your app, the framework, and the HTTP server compile into one file. The server needs
+            no Ruby runtime — ship the binary or the container image.
+          </span>
+          <span class="feature-go">Deploying →</span>
+        </a>
+        <a class="feature" href={url('/manual/welcome-to-snails/#how-it-compares')}>
+          <h3 class="feature-title">Every core, one process</h3>
+          <span class="feature-body">
+            Native code has no GVL, so a single process serves requests on all available cores.
+            Memory does not multiply with worker count.
+          </span>
+          <span class="feature-go">How it compares →</span>
+        </a>
+        <a class="feature" href={url('/manual/testing/')}>
+          <h3 class="feature-title">Tests against a real server</h3>
+          <span class="feature-body">
+            <code>bin/test</code> builds the app, boots it on a spare port, and sends real HTTP
+            requests. Nothing mocks the framework out of the way.
+          </span>
+          <span class="feature-go">Testing →</span>
+        </a>
+      </div>
+
+      <p class="scope">
+        API-only by design: no HTML views, asset pipeline, or CSRF tokens. If you need
+        server-rendered pages, this is the wrong tool.
+      </p>
+    </section>
 
     <section class="perf" aria-labelledby="performance">
       <h2 class="perf-title" id="performance">Performance</h2>
@@ -122,13 +213,18 @@ const boot = figures.rowValues('Launch to first answer');
     <div class="cards">
       <a class="card" href={url('/manual/')}>
         <span class="card-title">Manual</span>
-        <span class="card-body">Everything you need to build, run, and ship an app. Eighteen chapters, from install to deploy.</span>
+        <span class="card-body">The full guide, from install to deploy.</span>
         <span class="card-go">Read the manual →</span>
       </a>
       <a class="card" href={url('/api/')}>
         <span class="card-title">API reference</span>
-        <span class="card-body">The public surface of the runtime, generated from its comments.</span>
+        <span class="card-body">The runtime's public surface, generated from its comments.</span>
         <span class="card-go">Browse the API →</span>
+      </a>
+      <a class="card" href="https://github.com/snails-rb/snails">
+        <span class="card-title">Source</span>
+        <span class="card-body">The framework and manual source, MIT licensed.</span>
+        <span class="card-go">GitHub ↗</span>
       </a>
     </div>
   </article>
@@ -141,7 +237,7 @@ const boot = figures.rowValues('Launch to first answer');
       button.addEventListener('click', async () => {
         await navigator.clipboard.writeText(source.textContent);
         button.textContent = 'Copied';
-        setTimeout(() => { button.textContent = 'Copy all'; }, 1500);
+        setTimeout(() => { button.textContent = 'Copy'; }, 1500);
       });
     }
   </script>
