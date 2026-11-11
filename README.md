@@ -29,7 +29,7 @@ To see the built site the way GitHub Pages serves it, run `npm run preview` afte
 
 There is no manual landing page: the chapter list is in every chapter's sidebar, so `/manual/` only redirects to the first chapter (a client-side `<meta refresh>`, since Pages serves static files).
 
-The site holds a copy of the manual and of nothing else. `runtime/` lives only in the snails repo — `bin/build-api` fetches it at build time, so the API reference can never describe an older tree than the one the source has. The manual copy is committed because the chapter list is part of the site's own navigation; refresh it instead of editing it:
+The site holds a copy of the manual and of nothing else. `runtime/` lives only in the Snails repo — `bin/build-api` fetches it at build time, so the API reference can never describe an older tree than the one the source has. The manual copy is committed because the chapter list is part of the site's own navigation; refresh it instead of editing it:
 
 ```sh
 bin/sync-manual                 # fetch the latest main over https
@@ -54,7 +54,7 @@ The `--syntax-*` roles in `src/styles/tokens.css` are the only place a code colo
 
 ## Landing page figures
 
-The performance section on `/` reads its numbers from the manual's comparison table (`manual/01-welcome-to-snails.md`, the "How it compares" table) through `src/lib/performance.mjs` — it does not carry a second copy. The manual is refreshed from the snails repo on a schedule, so a copied set of figures would keep serving the old values after each refresh.
+The performance section on `/` reads its numbers from the manual's comparison table (`manual/01-welcome-to-snails.md`, the "How it compares" table) through `src/lib/performance.mjs` — it does not carry a second copy. The manual is refreshed from the Snails repo on a schedule, so a copied set of figures would keep serving the old values after each refresh.
 
 The build fails when the table stops matching what the page reads: a renamed column, a missing row, or a request count that is not a number. That turns silent drift into a build failure, which is the point — the fix is to update the loader together with the manual.
 
@@ -76,4 +76,4 @@ npm run preview           # serve dist/ at /snails-site/ like Pages does
 
 ## Decisions
 
-The plan behind this site — scope, hosting, build pipeline, and the measurements they rest on — lives in the snails planning repo: `plans/website.md`.
+The plan behind this site — scope, hosting, build pipeline, and the measurements they rest on — lives in the Snails planning repo: `plans/website.md`.
