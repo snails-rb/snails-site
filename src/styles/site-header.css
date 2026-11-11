@@ -14,7 +14,13 @@
   display: flex;
   align-items: center;
   gap: 2.5rem;
-  max-width: 78rem;
+  /* The API output concatenates this file without site.css's global
+     `box-sizing: border-box`, so the max-width has to include the padding
+     explicitly or the brand starts 1.5rem left of the API navigation. */
+  box-sizing: border-box;
+  /* Same shell as the centered pages below: the brand starts where the content
+     starts, not 3rem outside it. */
+  max-width: 72rem;
   margin: 0 auto;
   padding: 0.9rem 1.5rem;
 }
@@ -49,6 +55,15 @@
 
 .site-header .site-nav a.active {
   color: var(--syntax-green);
+}
+
+@media (max-width: 60rem) {
+  /* The page shell drops to 1.25rem side padding here; the header has to
+     follow it or the brand sits 4px inside the content below. */
+  .site-header-inner {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
 }
 
 @media (max-width: 40rem) {

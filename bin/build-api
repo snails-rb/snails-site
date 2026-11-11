@@ -117,6 +117,26 @@ body {
   min-height: 0;
 }
 
+/* The shared header is 72rem. Center YARD's body on the same shell so the
+   navigation starts where the brand does, instead of at the viewport edge.
+   The side padding follows the header's own breakpoint: 1.25rem under 60rem,
+   1.5rem above it. */
+@media (min-width: 921px) {
+  .yard-body {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+  }
+}
+
+@media (min-width: 961px) {
+  .yard-body {
+    padding: 0 1.5rem;
+  }
+}
+
 /* The nav is a fixed column, not a percentage: monospace class names are wider
    than the proportional face YARD sized the 20% split for. */
 .nav_wrap {
@@ -206,6 +226,10 @@ a, #content a, #content a:visited, #menu a, #menu a:visited {
 
 #main {
   background: var(--bg);
+  /* YARD insets #main by 1.2em. The nav ends at a border; 1rem is the content
+     gap the rest of the site uses most often, and the resize handle is hidden
+     so nothing overlays this gutter. */
+  padding-left: 1rem;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -456,8 +480,11 @@ pre.code .lines {
   background: var(--bg);
 }
 
+/* The nav is a fixed 20rem column, so YARD's resize handle has nothing to
+   resize; it also sits 5px into the main column and covers the first
+   character now that #main starts at the divider. */
 #resizer {
-  background: var(--line);
+  display: none;
 }
 
 #menu {
@@ -699,6 +726,9 @@ input[type='text'] {
 
   .yard-body {
     display: block;
+    /* The header keeps its 1.25rem side padding here; the body has to start
+       on the same line instead of touching the viewport edge. */
+    padding: 0 1.25rem;
   }
 
   /* The overlay would otherwise cover the shared header. */

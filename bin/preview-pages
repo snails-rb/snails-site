@@ -1,15 +1,15 @@
 #!/bin/bash
 # Serve the built site the way GitHub Pages does: from a repository subpath.
 #
-#   bin/preview-pages [port]
+#   bin/preview-pages
 #
 # `astro dev` serves at the root, so a link that ignores `base` still works
-# there. This script copies dist/ under /snails-site/ and serves the parent,
-# which is the only local setup where such a link actually 404s.
+# there. This script serves dist/ under /snails-site/, which is the only local
+# setup where such a link actually 404s.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PORT="${1:-4212}"
+PORT=4212
 BASE="${SITE_BASE:-/snails-site/}"
 NAME="${BASE#/}"
 NAME="${NAME%/}"
@@ -29,16 +29,46 @@ NAME="${NAME%/}"
   exit 1
 }
 
+# `dist/` is a snapshot, not a live view. Warn when it is older than the source
+# so a stale preview is not mistaken for a page bug, but serve it anyway: the
+# reader may be looking at a build they already made.
+if [[ -n "$(find "$ROOT/src" "$ROOT/manual" "$ROOT/templates" "$ROOT/bin/build-api" "$ROOT/astro.config.mjs" -newer "$ROOT/dist/index.html" -print 2>/dev/null | sed -n '1p')" ]]; then
+  echo "[preview-pages] warning: dist/ is older than the source; run 'npm run build' to refresh it" >&2
+fi
+
+# One preview, one port. A second invocation must not leave two servers
+# running; point at the existing preview instead.
+port_in_use() {
+  (exec 3<>/dev/tcp/127.0.0.1/"$1") 2>/dev/null
+}
+if port_in_use "$PORT"; then
+  echo "[preview-pages] preview already running — open $BASE" >&2
+  echo "[preview-pages] stop the old preview first if you need a fresh process" >&2
+  exit 0
+fi
+
 STAGE="$(mktemp -d)"
 trap 'rm -rf "$STAGE"' EXIT
-cp -R "$ROOT/dist" "$STAGE/$NAME"
-# The copy itself is not atomic: a build that starts mid-copy still yields an
-# incomplete stage, so verify what was staged rather than what was checked.
+# Serve the live build tree, not a copy: a rebuild then shows up on refresh
+# without restarting the preview or wondering which snapshot is on screen.
+ln -s "$ROOT/dist" "$STAGE/$NAME"
 [[ -f $STAGE/$NAME/index.html ]] || {
-  echo "[preview-pages] copied dist/ has no index.html — a build was running during the copy; rerun it" >&2
+  echo "[preview-pages] dist/index.html is missing — run 'npm run build' first" >&2
   exit 1
 }
 
-echo "[preview-pages] http://localhost:$PORT$BASE"
-echo "[preview-pages] serving the built output from $BASE — Ctrl-C to stop"
-( cd "$STAGE" && python3 -m http.server "$PORT" )
+echo "[preview-pages] serving dist/ live from $BASE — rebuild and refresh; Ctrl-C to stop"
+( cd "$STAGE" && python3 - "$PORT" <<'PY'
+import http.server
+import sys
+
+class Handler(http.server.SimpleHTTPRequestHandler):
+    # A local preview must never hand the browser yesterday's CSS from a cache.
+    def end_headers(self):
+        self.send_header("Cache-Control", "no-store")
+        super().end_headers()
+
+port = int(sys.argv[1])
+http.server.ThreadingHTTPServer(("127.0.0.1", port), Handler).serve_forever()
+PY
+)

@@ -40,9 +40,9 @@ Commit the refreshed copy; the diff is the review.
 
 ## Typography
 
-All three sections set type from one scale of eight steps in `src/styles/tokens.css` (`--text-2xs` … `--text-2xl`, 11px to 30px at the default root size). A page picks a step; it does not invent a size. `bin/build-api` copies the same token file into the YARD output, so the API reference cannot drift from the manual, and `npm test` fails on any `font-size` that does not name a step.
+All three sections set type from one fixed scale in `src/styles/tokens.css`. A page picks a step; it does not invent a size. `bin/build-api` copies the same token file into the YARD output, so the API reference cannot drift from the manual, and `npm test` fails on any `font-size` that does not name a step.
 
-Body prose is 15px, not the browser's 16px: JetBrains Mono is a monospace and every character is wider, so 16px monospace reads like 18px sans. Code, navigation, and tables sit one step down at 13px; headings go 17 / 20 / 30. The reference is <https://omarchy.org/>, which reads at the same 15px.
+Body prose is 15px, not the browser's 16px: JetBrains Mono is a monospace and every character is wider, so 16px monospace reads like 18px sans. Code, navigation, and tables sit one step down; headings use the larger steps. The reference is <https://omarchy.org/>, which reads at the same 15px.
 
 ## Code blocks
 

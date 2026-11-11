@@ -16,10 +16,10 @@
    Why the body is 15px, not the browser default 16px: a monospace face puts
    about 30% more advance width behind each character than the proportional
    faces UI type was drawn for, so 16px monospace reads as roughly 18px sans.
-   The scale below is eight fixed steps modelled on omarchy.org (15px prose,
-   13-14px navigation, 30px page title). It is a set of steps, not a ratio: a
-   page picks a step, and a size that is not one of these is a bug in the page,
-   not a new step.
+   The scale below is nine fixed steps modelled on omarchy.org (15px prose,
+   13-14px navigation, 30px page title, 40px landing hero). It is a set of
+   steps, not a ratio: a page picks a step, and a size that is not one of these
+   is a bug in the page, not a new step.
 
    Sizes are rem so the reader's own font-size setting still scales the page.
    The px values in the comments are what each step lands on at the default
@@ -37,7 +37,8 @@
   --text-base: 0.9375rem; /* 15px — body prose */
   --text-lg: 1.0625rem;   /* 17px — h3 */
   --text-xl: 1.25rem;     /* 20px — h2 */
-  --text-2xl: 1.875rem;   /* 30px — h1, landing hero */
+  --text-2xl: 1.875rem;   /* 30px — manual h1 */
+  --text-3xl: 2.5rem;     /* 40px — landing hero */
 
   /* Prose is looser than headings; code keeps prose's leading. */
   --leading-tight: 1.2;

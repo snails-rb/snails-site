@@ -213,8 +213,31 @@ test('/api/ is the site\'s own index, not the source repo README', () => {
   );
 });
 
-test('the type steps tokens.css declares are the eight the scale names', () => {
+test('the shared header and the centered pages use one shell width', () => {
+  // The header brand has to start where the landing hero, the manual sidebar,
+  // and the API navigation start; a wider header pushes the content inward.
+  const header = readFileSync(path.resolve(process.cwd(), 'src/styles/site-header.css'), 'utf8');
+  const site = readFileSync(path.resolve(process.cwd(), 'src/styles/site.css'), 'utf8');
+  const api = readFileSync(path.resolve(process.cwd(), 'bin/build-api'), 'utf8');
+
+  assert.match(header, /\.site-header-inner\s*\{[^}]*box-sizing:\s*border-box/s);
+  assert.match(header, /\.site-header-inner\s*\{[^}]*max-width:\s*72rem/s);
+  assert.match(site, /\.page\.wide\s*\{[^}]*max-width:\s*72rem/s);
+  assert.match(site, /\.page\.with-sidebar\s*\{[^}]*max-width:\s*72rem/s);
+  assert.match(api, /\.yard-body\s*\{[^}]*max-width:\s*72rem/s);
+});
+
+test('the built API chrome carries the header shell', () => {
+  // The API pages do not load site.css, so the generated site-chrome.css has
+  // to carry the header width itself. A missing copy shows up as a brand that
+  // sits one padding step left of the API navigation.
+  const css = readFileSync(path.join(dist, 'api', 'css', 'site-chrome.css'), 'utf8');
+  assert.match(css, /\.site-header-inner\s*\{[^}]*box-sizing:\s*border-box/s);
+  assert.match(css, /\.site-header-inner\s*\{[^}]*max-width:\s*72rem/s);
+});
+
+test('the type steps tokens.css declares are the nine the scale names', () => {
   const tokens = readFileSync(path.resolve(process.cwd(), 'src/styles/tokens.css'), 'utf8');
   const names = [...tokens.matchAll(/--text-([\w-]+):/g)].map((match) => match[1]);
-  assert.deepEqual(names, ['2xs', 'xs', 'sm', 'md', 'base', 'lg', 'xl', '2xl']);
+  assert.deepEqual(names, ['2xs', 'xs', 'sm', 'md', 'base', 'lg', 'xl', '2xl', '3xl']);
 });
