@@ -127,13 +127,13 @@ body {
     width: 100%;
     max-width: 72rem;
     margin: 0 auto;
-    padding: 0 1.25rem;
+    padding: 0 var(--space-5);
   }
 }
 
 @media (min-width: 961px) {
   .yard-body {
-    padding: 0 1.5rem;
+    padding: 0 var(--space-6);
   }
 }
 
@@ -229,7 +229,7 @@ a, #content a, #content a:visited, #menu a, #menu a:visited {
   /* YARD insets #main by 1.2em. The nav ends at a border; 1rem is the content
      gap the rest of the site uses most often, and the resize handle is hidden
      so nothing overlays this gutter. */
-  padding-left: 1rem;
+  padding-left: var(--space-4);
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -307,7 +307,7 @@ pre.code,
 dl.constants dd pre.code {
   display: inline-block;
   margin: 0;
-  padding: 0.25rem 0.625rem;
+  padding: var(--space-1) 0.625rem;
   max-width: 100%;
   overflow-x: auto;
 }
@@ -624,7 +624,7 @@ input[type='text'] {
   color: var(--fg);
   font-family: var(--font-body);
   font-size: var(--text-xs);
-  padding: 0.25rem 0.4rem;
+  padding: var(--space-1) 0.4rem;
 }
 
 /* The rules below are for the class-list document that loads inside the nav
@@ -645,7 +645,7 @@ input[type='text'] {
 
 .api-list #full_list_header {
   font-size: var(--text-base);
-  padding: 0.75rem 0.625rem 0.25rem;
+  padding: var(--space-3) 0.625rem var(--space-1);
 }
 
 .api-list #full_list_nav {
@@ -654,7 +654,7 @@ input[type='text'] {
 }
 
 .api-list #full_list_nav span {
-  margin-right: 0.5rem;
+  margin-right: var(--space-2);
 }
 
 .api-list #search {
@@ -669,7 +669,7 @@ input[type='text'] {
 .api-list #search input {
   width: 100%;
   max-width: 12rem;
-  margin-left: 0.25rem;
+  margin-left: var(--space-1);
 }
 
 .api-list #full_list {
@@ -685,7 +685,7 @@ input[type='text'] {
 }
 
 .api-list #full_list li .item {
-  padding: 0.3rem 0.5rem;
+  padding: 0.3rem var(--space-2);
   line-height: var(--leading-heading);
 }
 
@@ -707,7 +707,7 @@ input[type='text'] {
   h2 small {
     position: static;
     display: block;
-    margin-top: 0.25rem;
+    margin-top: var(--space-1);
   }
 
   h2 small a {
@@ -728,7 +728,7 @@ input[type='text'] {
     display: block;
     /* The header keeps its 1.25rem side padding here; the body has to start
        on the same line instead of touching the viewport edge. */
-    padding: 0 1.25rem;
+    padding: 0 var(--space-5);
   }
 
   /* The overlay would otherwise cover the shared header. */

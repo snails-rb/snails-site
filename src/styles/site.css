@@ -9,7 +9,7 @@
 
 html {
   -webkit-text-size-adjust: 100%;
-  scroll-padding-top: 5rem;
+  scroll-padding-top: var(--space-20);
 }
 
 body {
@@ -46,7 +46,7 @@ a:hover {
 .page {
   max-width: 56rem;
   margin: 0 auto;
-  padding: 3.5rem 1.5rem 6rem;
+  padding: var(--space-14) var(--space-6) var(--space-24);
 }
 
 /* The landing page puts the claim beside code, so it needs more room than the
@@ -58,7 +58,7 @@ a:hover {
 .page.with-sidebar {
   display: grid;
   grid-template-columns: 16rem minmax(0, var(--measure));
-  gap: 3.5rem;
+  gap: var(--space-14);
   max-width: 72rem;
   /* The sidebar's left edge lines up with the header brand and the landing
      page, so the block is not centered on its tracks — the 1.5rem padding and
@@ -82,7 +82,7 @@ a:hover {
 
 .sidebar li a {
   display: block;
-  padding: 0.35rem 0.6rem 0.35rem 0.5rem;
+  padding: 0.35rem 0.6rem 0.35rem var(--space-2);
   border-left: 2px solid transparent;
   border-radius: 0 6px 6px 0;
   color: var(--muted);
@@ -110,7 +110,7 @@ a:hover {
 /* --- Article ------------------------------------------------------------ */
 
 article h1 {
-  margin: 0 0 1.5rem;
+  margin: 0 0 var(--space-6);
   font-size: var(--text-2xl);
   font-weight: var(--weight-heading);
   line-height: var(--leading-tight);
@@ -118,7 +118,7 @@ article h1 {
 }
 
 article h2 {
-  margin: 3rem 0 0.875rem;
+  margin: var(--space-12) 0 0.875rem;
   padding-bottom: 0.4rem;
   border-bottom: 1px solid var(--line);
   font-size: var(--text-xl);
@@ -128,14 +128,14 @@ article h2 {
 }
 
 article h3 {
-  margin: 2.25rem 0 0.625rem;
+  margin: var(--space-9) 0 0.625rem;
   font-size: var(--text-lg);
   font-weight: var(--weight-heading);
   line-height: var(--leading-heading);
 }
 
 article p {
-  margin: 0 0 1rem;
+  margin: 0 0 var(--space-4);
 }
 
 article .anchor {
@@ -162,8 +162,8 @@ article code {
 }
 
 article pre {
-  margin: 0 0 1.25rem;
-  padding: 1rem 1.25rem;
+  margin: 0 0 var(--space-5);
+  padding: var(--space-4) var(--space-5);
   border: 1px solid var(--line);
   border-left: 3px solid var(--accent);
   border-radius: var(--radius);
@@ -189,7 +189,7 @@ article pre code {
 
 article ul,
 article ol {
-  margin: 0 0 1rem;
+  margin: 0 0 var(--space-4);
   padding-left: 1.4rem;
 }
 
@@ -199,14 +199,14 @@ article li {
 
 article table {
   width: 100%;
-  margin: 0 0 1.25rem;
+  margin: 0 0 var(--space-5);
   border-collapse: collapse;
   font-size: var(--text-md);
 }
 
 article th,
 article td {
-  padding: 0.5rem 0.75rem;
+  padding: var(--space-2) var(--space-3);
   border: 1px solid var(--line);
   text-align: left;
   vertical-align: top;
@@ -256,16 +256,16 @@ article strong {
 .front .hero {
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-  gap: 3.5rem;
+  gap: var(--space-14);
   align-items: center;
-  padding: 1rem 0 4rem;
+  padding: var(--space-4) 0 var(--space-16);
 }
 
 .front .eyebrow {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin: 0 0 1rem;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
   color: var(--syntax-green);
   font-size: var(--text-2xs);
   letter-spacing: 0.08em;
@@ -281,7 +281,7 @@ article strong {
 
 .front h1 {
   max-width: 34rem;
-  margin: 0 0 1.25rem;
+  margin: 0 0 var(--space-5);
   font-size: var(--text-3xl);
   font-weight: var(--weight-heading);
   line-height: var(--leading-tight);
@@ -292,7 +292,7 @@ article strong {
    body step, so the hero keeps its hierarchy above the feature cards. */
 .front .lede {
   max-width: 34rem;
-  margin: 0 0 1.75rem;
+  margin: 0 0 var(--space-7);
   color: var(--muted);
   font-size: var(--text-lg);
   line-height: var(--leading-prose);
@@ -301,14 +301,14 @@ article strong {
 .front .hero-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-bottom: 1.75rem;
+  gap: var(--space-3);
+  margin-bottom: var(--space-7);
 }
 
 .front .button {
   display: inline-flex;
   align-items: center;
-  padding: 0.55rem 1rem;
+  padding: 0.55rem var(--space-4);
   border: 1px solid transparent;
   border-radius: 6px;
   font-size: var(--text-sm);
@@ -350,8 +350,8 @@ article strong {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 0.45rem 0.75rem;
+  gap: var(--space-4);
+  padding: 0.45rem var(--space-3);
   border-bottom: 1px solid var(--line);
   color: var(--muted);
   font-size: var(--text-2xs);
@@ -362,8 +362,8 @@ article strong {
 .front .install-bar-body {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.65rem 0.75rem;
+  gap: var(--space-3);
+  padding: 0.65rem var(--space-3);
 }
 
 .front .install-bar code {
@@ -425,8 +425,8 @@ article strong {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 0.5rem 0.9rem;
+  gap: var(--space-4);
+  padding: var(--space-2) 0.9rem;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   background: var(--surface);
@@ -445,7 +445,7 @@ article strong {
 
 .front .demo-code pre {
   margin: 0;
-  padding: 0.8rem 1rem;
+  padding: 0.8rem var(--space-4);
   border: none;
   border-radius: 0;
   background: none;
@@ -481,13 +481,13 @@ article strong {
 /* The feature grid answers "what do I get" before the benchmark backs up the
    speed claim. Each card links to the chapter that owns its detail. */
 .front .features {
-  margin-bottom: 4rem;
-  padding-top: 2rem;
+  margin-bottom: var(--space-16);
+  padding-top: var(--space-8);
   border-top: 1px solid var(--line);
 }
 
 .front .features h2 {
-  margin: 0 0 0.5rem;
+  margin: 0 0 var(--space-2);
   padding: 0;
   border: none;
   font-size: var(--text-xl);
@@ -507,15 +507,15 @@ article strong {
 .front .feature-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-  margin-top: 2rem;
+  gap: var(--space-4);
+  margin-top: var(--space-8);
 }
 
 .front .feature {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  padding: 1.25rem 1.375rem 1.375rem;
+  gap: var(--space-2);
+  padding: var(--space-5) 1.375rem 1.375rem;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
@@ -554,7 +554,7 @@ article strong {
 
 .front .scope {
   max-width: var(--measure);
-  margin: 1.25rem 0 0;
+  margin: var(--space-5) 0 0;
   color: var(--muted);
   font-size: var(--text-xs);
   line-height: var(--leading-prose);
@@ -565,13 +565,13 @@ article strong {
    numbers a deployment cares about. The install block above is the page's only
    framed element, so the two do not read as the same component. */
 .front .perf {
-  margin-bottom: 4rem;
-  padding-top: 2rem;
+  margin-bottom: var(--space-16);
+  padding-top: var(--space-8);
   border-top: 1px solid var(--line);
 }
 
 .front .perf-title {
-  margin: 0 0 0.5rem;
+  margin: 0 0 var(--space-2);
   padding: 0;
   border: none;
   font-size: var(--text-xl);
@@ -598,7 +598,7 @@ article strong {
    it, so the three lengths are compared on one baseline rather than through a
    boxed table. */
 .front .perf-chart {
-  margin: 2rem 0 0;
+  margin: var(--space-8) 0 0;
 }
 
 .front .perf-chart figcaption {
@@ -620,7 +620,7 @@ article strong {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--space-4);
   font-size: var(--text-sm);
 }
 
@@ -662,14 +662,14 @@ article strong {
 .front .perf-stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin: 2rem 0 0;
-  padding: 1.25rem 0;
+  margin: var(--space-8) 0 0;
+  padding: var(--space-5) 0;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
 }
 
 .front .perf-stat {
-  padding: 0 1.25rem;
+  padding: 0 var(--space-5);
   border-left: 1px solid var(--line);
 }
 
@@ -710,7 +710,7 @@ article strong {
 
 .front .perf-method {
   max-width: var(--measure);
-  margin: 1rem 0 0;
+  margin: var(--space-4) 0 0;
   color: var(--muted);
   font-size: var(--text-xs);
   line-height: var(--leading-prose);
@@ -719,15 +719,15 @@ article strong {
 .cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
 }
 
 .card {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  padding: 1.25rem 1.375rem 1.375rem;
+  gap: var(--space-2);
+  padding: var(--space-5) 1.375rem 1.375rem;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
@@ -753,7 +753,7 @@ article strong {
 }
 
 .card-go {
-  margin-top: 0.25rem;
+  margin-top: var(--space-1);
   color: var(--syntax-green);
   font-size: var(--text-sm);
 }
@@ -763,9 +763,9 @@ article strong {
 .pager {
   display: flex;
   justify-content: space-between;
-  gap: 1rem;
-  margin-top: 4rem;
-  padding-top: 1.25rem;
+  gap: var(--space-4);
+  margin-top: var(--space-16);
+  padding-top: var(--space-5);
   border-top: 1px solid var(--line);
   font-size: var(--text-sm);
 }
@@ -782,18 +782,18 @@ article strong {
 
 @media (max-width: 60rem) {
   .page {
-    padding: 2rem 1.25rem 4rem;
+    padding: var(--space-8) var(--space-5) var(--space-16);
   }
 
   .page.with-sidebar {
     grid-template-columns: minmax(0, 1fr);
-    gap: 1.5rem;
+    gap: var(--space-6);
   }
 
   .front .hero {
     grid-template-columns: minmax(0, 1fr);
-    gap: 2.5rem;
-    padding-bottom: 3rem;
+    gap: var(--space-10);
+    padding-bottom: var(--space-12);
   }
 
   /* Stacked, the demo would otherwise stretch to the full landing width and
@@ -810,14 +810,14 @@ article strong {
 
   .sidebar {
     position: static;
-    padding-bottom: 0.5rem;
+    padding-bottom: var(--space-2);
     border-bottom: 1px solid var(--line);
   }
 
   .sidebar ul {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.25rem;
+    gap: var(--space-1);
   }
 
   .sidebar li a {
@@ -834,8 +834,8 @@ article strong {
      a phone width the numbers wrap inside columns too narrow to read. */
   .front .perf-stats {
     grid-template-columns: minmax(0, 1fr);
-    gap: 1rem;
-    padding: 1rem 0;
+    gap: var(--space-4);
+    padding: var(--space-4) 0;
   }
 
   .front .perf-stat {
@@ -844,7 +844,7 @@ article strong {
   }
 
   .front .perf-stat + .perf-stat {
-    padding-top: 1rem;
+    padding-top: var(--space-4);
     border-top: 1px solid var(--line);
   }
 }

@@ -236,6 +236,20 @@ test('the built API chrome carries the header shell', () => {
   assert.match(css, /\.site-header-inner\s*\{[^}]*max-width:\s*72rem/s);
 });
 
+test('the spacing scale is a 4px base', () => {
+  // The step name is the number of 4px units, so --space-4 is 1rem. A token
+  // that does not match the scale would make the numbered steps meaningless.
+  const tokens = readFileSync(path.resolve(process.cwd(), 'src/styles/tokens.css'), 'utf8');
+  const steps = [...tokens.matchAll(/--space-(\d+):\s*([\d.]+)rem/g)].map((match) => ({
+    step: Number(match[1]),
+    rem: Number(match[2]),
+  }));
+  assert.ok(steps.length > 0, 'expected spacing tokens');
+  for (const { step, rem } of steps) {
+    assert.equal(rem * 16, step * 4, `--space-${step} is not ${step * 4}px`);
+  }
+});
+
 test('the type steps tokens.css declares are the nine the scale names', () => {
   const tokens = readFileSync(path.resolve(process.cwd(), 'src/styles/tokens.css'), 'utf8');
   const names = [...tokens.matchAll(/--text-([\w-]+):/g)].map((match) => match[1]);
