@@ -9,14 +9,14 @@ Live at <https://snails-rb.github.io/snails-site/> (GitHub Pages, served from th
 ```sh
 npm install          # once
 bundle install       # once — YARD renders the API reference
-npm run dev          # http://localhost:4211
+npm run dev          # http://localhost:4211/snails-site/
 ```
 
 `npm run dev` renders the manual and landing page only. Run `npm run api -- path/to/snails` first if you want `/api/` while developing; the dev server serves whatever is in `public/api/`.
 
 `npm run build` does both: it renders the API reference into `public/api/`, then builds the site into `dist/`. `npm test` checks the built output.
 
-To see the built site the way GitHub Pages serves it — from the `/snails-site/` subpath — run `bin/preview-pages` after a build. `astro dev` serves at the root, so a link that ignores `base` still works there; `bin/preview-pages` is the only local setup where such a link actually breaks.
+To see the built site the way GitHub Pages serves it, run `npm run preview` after a build. Astro serves both dev and preview under `base`, so a link that ignores `/snails-site/` fails there too.
 
 ## What goes where
 
@@ -69,7 +69,7 @@ GitHub Pages serves this repository at `/snails-site/`, so every internal link i
 ```sh
 npm test                  # built output: pages, links, deploy path, type scale
 bin/build-api --check     # render the API twice and diff the results
-bin/preview-pages         # serve dist/ at /snails-site/ like Pages does
+npm run preview           # serve dist/ at /snails-site/ like Pages does
 ```
 
 `.github/workflows/site.yml` runs both on every pull request and deploys `dist/` to Pages on `main`.
