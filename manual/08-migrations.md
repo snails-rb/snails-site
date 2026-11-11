@@ -11,17 +11,19 @@ You change the database schema the explicit way: write a numbered file under `db
 ```
 
 ```sh
-snails migrate apply
-snails migrate dump
+snails migrate load
 ```
 
 ```text
 applying 20261107203440_baseline
 1 applied
 [snails] snapshot regenerated (3 statements)
+[snails] database ready
 ```
 
-If `apply` fails with `unable to open database`, the `storage/` folder does not exist yet — start `bin/dev` once, or create the folder, and run it again.
+`load` is the explicit setup command: it creates the database if it is missing, loads `db/schema.sql` when one exists, replays pending migrations to record the ledger, then refreshes the snapshot. A sqlite app gets its `storage/` directory with the project, so this works before the first boot.
+
+Nothing touches the database on its own. `bin/dev` never creates, loads, or applies anything: an uninitialized database or a pending migration stops the boot before the build and prints `snails migrate load` for a fresh database or `snails migrate apply` once the ledger exists.
 
 ## Change the schema
 
@@ -47,6 +49,8 @@ applying 20261108090000_add_slug_to_posts
 1 applied
 ```
 
+`snails migrate load` does both steps for an initialized database too: it applies the pending migration and refreshes the snapshot. `apply` alone leaves the snapshot for the explicit dump.
+
 ## Keep the snapshot in step
 
 The tests load `db/schema.sql`, so regenerate it after every change:
@@ -54,6 +58,8 @@ The tests load `db/schema.sql`, so regenerate it after every change:
 ```text
 [snails] snapshot regenerated (3 statements)
 ```
+
+`snails migrate load` refreshes the snapshot as part of setup and apply. `bin/dev` never regenerates it: the boot stops while the database is uninitialized or a migration is pending, and a forgotten dump after a bare `snails migrate apply` stays visible to `snails migrate verify`.
 
 The file header says it plainly — generated output, do not edit it:
 
@@ -70,4 +76,4 @@ The file header says it plainly — generated output, do not edit it:
 20261108090000_add_slug_to_posts applied
 ```
 
-`snails migrate verify` confirms the snapshot still matches a replay of the migrations, and `snails migrate check` exits non-zero while anything is pending — useful before a deploy.
+`snails migrate verify` confirms the snapshot still matches a replay of the migrations, and `snails migrate check` exits non-zero while the database is uninitialized or anything is pending — useful before a deploy.
