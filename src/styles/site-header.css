@@ -13,7 +13,7 @@
 .site-header-inner {
   display: flex;
   align-items: center;
-  gap: 2.5rem;
+  gap: var(--space-10);
   /* The API output concatenates this file without site.css's global
      `box-sizing: border-box`, so the max-width has to include the padding
      explicitly or the brand starts 1.5rem left of the API navigation. */
@@ -22,7 +22,7 @@
      starts, not 3rem outside it. */
   max-width: 72rem;
   margin: 0 auto;
-  padding: 0.9rem 1.5rem;
+  padding: 0.9rem var(--space-6);
 }
 
 .site-header .brand {
@@ -40,7 +40,7 @@
    14px is omarchy.org's top-nav step; 13px stays for the sidebar and code. */
 .site-header .site-nav {
   display: flex;
-  gap: 1.5rem;
+  gap: var(--space-6);
   font-size: var(--text-md);
 }
 
@@ -61,14 +61,14 @@
   /* The page shell drops to 1.25rem side padding here; the header has to
      follow it or the brand sits 4px inside the content below. */
   .site-header-inner {
-    padding-left: 1.25rem;
-    padding-right: 1.25rem;
+    padding-left: var(--space-5);
+    padding-right: var(--space-5);
   }
 }
 
 @media (max-width: 40rem) {
   .site-header-inner {
-    gap: 1.5rem;
-    padding: 0.75rem 1.25rem;
+    gap: var(--space-6);
+    padding: var(--space-3) var(--space-5);
   }
 }
