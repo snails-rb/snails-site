@@ -38,6 +38,19 @@ bin/sync-manual path/to/snails  # copy from a local checkout
 
 Commit the refreshed copy; the diff is the review.
 
+## Copy variants
+
+The intro has two full variants, and they answer different questions:
+
+- **Landing (`/`)** is the evaluation copy. One paragraph, outcome and comparison, not a stack inventory. It carries the benchmark and the deployment trade-off; the feature cards and manual links carry the detail.
+- **Manual `01-welcome-to-snails.md`** is the canonical definition. It lists the Rails shape and the limits, but no benchmark numbers — the manual's "How it compares" section owns those. The Snails README uses the same opening paragraph.
+
+If a sentence can move between the two unchanged, treat it as definition copy and keep it in the manual. The landing must add the choice-making claim.
+
+A repository-specific intro is not needed: visitors get the canonical definition, and evaluators get the landing pitch.
+
+The `<meta name="description">` in `src/layouts/Base.astro` is the search/social snippet. It is one sentence from the landing pitch, not the canonical manual paragraph.
+
 ## Typography
 
 All three sections set type from one fixed scale in `src/styles/tokens.css`. A page picks a step; it does not invent a size. `bin/build-api` copies the same token file into the YARD output, so the API reference cannot drift from the manual, and `npm test` fails on any `font-size` that does not name a step.

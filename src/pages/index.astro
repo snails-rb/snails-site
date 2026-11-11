@@ -46,10 +46,10 @@ const boot = figures.rowValues('Launch to first answer');
         <p class="eyebrow"><span class="status">Alpha</span> Ruby · native binary</p>
         <h1 id="hero-title">Ruby web apps.<br />One native binary.</h1>
         <p class="lede">
-          Snails is a Rails-like framework for JSON APIs. Routes, controllers, models,
-          migrations, forms, and jobs are ordinary Ruby; the build compiles them, the framework,
-          and the HTTP server into one executable. It boots in milliseconds and uses every core.
-          No Ruby runtime on the server.
+          Snails is a Rails-like framework that compiles API-only Ruby apps into one native
+          binary. No Ruby runtime, no GVL, no Puma workers: one process serves requests on every
+          core and boots in single-digit milliseconds. Against Rails in cluster mode, that's ~3×
+          the throughput with over 20× less memory under load — and ~12× against a default Rails app.
         </p>
 
         <div class="hero-actions">
