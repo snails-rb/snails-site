@@ -75,11 +75,9 @@ The build fails when the table stops matching what the page reads: a renamed col
 
 ## Deploy path
 
-Cloudflare Workers serves this repository at <https://snails-rb.org/>, so every internal link is built from `base` in `astro.config.mjs`. The base defaults to `/`; set `SITE_BASE=/snails-site/` to preview the retired GitHub Pages path, and nothing else changes — the tests fail on any link that ignores the configured base, so a missed spot cannot reach a deploy.
+Cloudflare Workers serves the site at <https://snails-rb.org/> from the domain root. Every internal link is built from `base` in `astro.config.mjs`; the default is `/`, and `SITE_BASE=/snails-site/` previews the retired GitHub Pages path.
 
-`wrangler.jsonc` names the Worker (`snails-site`) and points it at `dist/`. `.github/workflows/site.yml` builds and tests the artifact, then runs `npx wrangler deploy` on `main`. Cloudflare does not build the site: the Ruby and YARD step stays in Actions, where `.ruby-version` and `Gemfile.lock` pin it.
-
-The first deploy needs two repository secrets, `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. The token needs Worker write access for the account. The custom domains are attached once in the Workers dashboard; Cloudflare creates the DNS records and certificates. `worker.js` serves `dist/` through the `ASSETS` binding and redirects `www.snails-rb.org` to the apex.
+`wrangler.jsonc` points the Worker at `dist/`. `.github/workflows/site.yml` builds and tests the artifact, then deploys it on `main`; Cloudflare does not build the site, so Ruby and YARD stay pinned in Actions. `worker.js` serves the files through the `ASSETS` binding and redirects `www.snails-rb.org` to the apex.
 
 ## Checks
 
@@ -87,7 +85,6 @@ The first deploy needs two repository secrets, `CLOUDFLARE_API_TOKEN` and `CLOUD
 npm run build              # render the API reference, then build dist/
 npm test                   # built output: pages, links, deploy path, type scale
 bin/build-api --check      # render the API twice and diff the results
-npx wrangler deploy --dry-run  # check the Worker config without uploading
 npm run preview            # serve dist/ from the built base
 ```
 
