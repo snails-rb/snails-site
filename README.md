@@ -2,21 +2,21 @@
 
 The official Snails site: a landing page, the manual, and the API reference, built as one static site.
 
-Live at <https://snails-rb.github.io/snails-site/> (GitHub Pages, served from the repository path).
+Live at <https://snails-rb.org/> (Cloudflare Workers, served from the domain root).
 
 ## Run it
 
 ```sh
 npm install          # once
 bundle install       # once — YARD renders the API reference
-npm run dev          # http://localhost:4211/snails-site/
+npm run dev          # http://localhost:4211/
 ```
 
 `npm run dev` renders the manual and landing page only. Run `npm run api -- path/to/snails` first if you want `/api/` while developing; the dev server serves whatever is in `public/api/`.
 
 `npm run build` does both: it renders the API reference into `public/api/`, then builds the site into `dist/`. `npm test` checks the built output.
 
-To see the built site the way GitHub Pages serves it, run `npm run preview` after a build. Astro serves both dev and preview under `base`, so a link that ignores `/snails-site/` fails there too.
+To see the built site the way Cloudflare Workers serves it, run `npm run preview` after a build. Astro serves both dev and preview under `base`, so a link that ignores the configured base fails there too.
 
 ## What goes where
 
@@ -27,7 +27,7 @@ To see the built site the way GitHub Pages serves it, run `npm run preview` afte
 | `/manual/<slug>/` | one page per manual chapter | `manual/` (vendored) |
 | `/api/` | API reference | `runtime/` in [`snails-rb/snails`](https://github.com/snails-rb/snails), rendered by YARD |
 
-There is no manual landing page: the chapter list is in every chapter's sidebar, so `/manual/` only redirects to the first chapter (a client-side `<meta refresh>`, since Pages serves static files).
+There is no manual landing page: the chapter list is in every chapter's sidebar, so `/manual/` only redirects to the first chapter (a client-side `<meta refresh>`, since the site is static).
 
 The site holds a copy of the manual and of nothing else. `runtime/` lives only in the Snails repo — `bin/build-api` fetches it at build time, so the API reference can never describe an older tree than the one the source has. The manual copy is committed because the chapter list is part of the site's own navigation; refresh it instead of editing it:
 
@@ -75,17 +75,23 @@ The build fails when the table stops matching what the page reads: a renamed col
 
 ## Deploy path
 
-GitHub Pages serves this repository at `/snails-site/`, so every internal link is built from `base` in `astro.config.mjs`. When a custom domain serves the site from the root, set `SITE_BASE=/` and nothing else changes — the tests fail on any link that ignores the base, so a missed spot cannot reach a deploy.
+Cloudflare Workers serves this repository at <https://snails-rb.org/>, so every internal link is built from `base` in `astro.config.mjs`. The base defaults to `/`; set `SITE_BASE=/snails-site/` to preview the retired GitHub Pages path, and nothing else changes — the tests fail on any link that ignores the configured base, so a missed spot cannot reach a deploy.
+
+`wrangler.jsonc` names the Worker (`snails-site`) and points it at `dist/`. `.github/workflows/site.yml` builds and tests the artifact, then runs `npx wrangler deploy` on `main`. Cloudflare does not build the site: the Ruby and YARD step stays in Actions, where `.ruby-version` and `Gemfile.lock` pin it.
+
+The first deploy needs two repository secrets, `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. The token needs Worker write access for the account. The custom domain is attached once in the Workers dashboard; Cloudflare creates the DNS record and certificate. `www` is a separate custom domain or a Cloudflare redirect rule.
 
 ## Checks
 
 ```sh
-npm test                  # built output: pages, links, deploy path, type scale
-bin/build-api --check     # render the API twice and diff the results
-npm run preview           # serve dist/ at /snails-site/ like Pages does
+npm run build              # render the API reference, then build dist/
+npm test                   # built output: pages, links, deploy path, type scale
+bin/build-api --check      # render the API twice and diff the results
+npx wrangler deploy --dry-run  # check the Worker config without uploading
+npm run preview            # serve dist/ from the built base
 ```
 
-`.github/workflows/site.yml` runs both on every pull request and deploys `dist/` to Pages on `main`.
+`.github/workflows/site.yml` runs the checks on every pull request and deploys `dist/` to Cloudflare Workers on `main`.
 
 ## Decisions
 

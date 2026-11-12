@@ -3,8 +3,8 @@
 //   1. a chapter that does not parse, or a chapter link that points nowhere;
 //   2. the API index rendering the source repo's own README instead of the
 //      site's page, which YARD does whenever one sits in its working directory;
-//   3. a root-absolute link that ignores the deploy path, which only shows up
-//      once GitHub Pages serves the site from /snails-site/;
+//   3. a root-absolute link that ignores a configured subpath, or one that
+//      still carries the retired /snails-site/ prefix;
 //   4. a font size that names no step of the type scale;
 //   5. a code block that lost its highlighting, or a colour that escaped the
 //      palette in tokens.css.
@@ -19,7 +19,7 @@ import path from 'node:path';
 import { loadChapters, renderMarkdown, url } from '../src/lib/manual.mjs';
 import { HIGHLIGHT_LANGUAGES } from '../src/lib/highlight.mjs';
 
-const base = process.env.SITE_BASE ?? '/snails-site/';
+const base = process.env.SITE_BASE ?? '/';
 const dist = path.resolve(process.cwd(), 'dist');
 
 function htmlFiles(dir) {
@@ -144,9 +144,10 @@ test('/manual/ redirects to the first chapter instead of a duplicate index', () 
 });
 
 test('no link ignores the deploy path', () => {
-  // Internal links must start with the base. A root-absolute href like
-  // /manual/x/ works locally at the root and 404s once Pages serves the site
-  // from /snails-site/, which is exactly the failure this catches.
+  // Internal links must start with the base. When the base is a subpath, a
+  // root-absolute href like /manual/x/ works locally at the root and 404s on
+  // deploy. With the domain root, the retired-prefix test below catches the
+  // migration case instead.
   const offenders = [];
   for (const file of htmlFiles(dist)) {
     const html = readFileSync(file, 'utf8');
@@ -155,6 +156,24 @@ test('no link ignores the deploy path', () => {
     }
   }
   assert.deepEqual(offenders, [], `links outside ${base}:\n${offenders.join('\n')}`);
+});
+
+test('no link carries the retired repository path', (t) => {
+  // The site moved from GitHub Pages under /snails-site/ to its own domain
+  // root. A link that still carries the old prefix works only on the old host,
+  // so catch it while the root is the configured base.
+  if (base !== '/') {
+    t.skip('the configured base is the retired repository path for this run');
+    return;
+  }
+  const offenders = [];
+  for (const file of htmlFiles(dist)) {
+    const html = readFileSync(file, 'utf8');
+    for (const match of html.matchAll(/(?:href|src)="(\/snails-site\/[^"]*)"/g)) {
+      offenders.push(`${path.relative(dist, file)} → ${match[1]}`);
+    }
+  }
+  assert.deepEqual(offenders, [], `links to the retired repository path:\n${offenders.join('\n')}`);
 });
 
 test('every internal link resolves to a built file', () => {

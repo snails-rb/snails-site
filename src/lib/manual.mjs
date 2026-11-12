@@ -2,8 +2,8 @@
 // snails-rb/snails. The two-digit prefix is the reading order and stays out of
 // URLs; the rest of the filename is the slug. Chapters link to each other by
 // filename, and every URL the site emits goes through `url()` so the deploy
-// path (GitHub Pages repository subpath, or a custom domain root) stays in one
-// place.
+// path (the domain root, or a subpath when SITE_BASE overrides it) stays in
+// one place.
 
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
@@ -12,11 +12,11 @@ import { highlightCode } from './highlight.mjs';
 
 const DEFAULT_DIR = path.resolve(process.cwd(), 'manual');
 
-// Mirrors astro.config.mjs: SITE_BASE overrides the default repository path.
-const base = process.env.SITE_BASE ?? '/snails-site/';
+// Mirrors astro.config.mjs: the domain root is the default; SITE_BASE overrides it.
+const base = process.env.SITE_BASE ?? '/';
 const prefix = base.endsWith('/') ? base.slice(0, -1) : base;
 
-// `url('/manual/welcome/')` → `/snails-site/manual/welcome/`.
+// `url('/manual/welcome/')` → `/manual/welcome/`.
 export function url(absolutePath) {
   if (!absolutePath.startsWith('/')) {
     throw new Error(`url() expects a root-relative path, got ${absolutePath}`);
