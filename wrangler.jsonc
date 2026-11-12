@@ -1,19 +1,13 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "snails-site",
-  "main": "./worker.js",
   "compatibility_date": "2026-11-12",
   "preview_urls": true,
   // GitHub Actions builds dist/ and uploads it; Cloudflare serves the files and
-  // never runs a second build. The Worker script only redirects the www host;
-  // every other request goes through the ASSETS binding.
+  // never runs a second build. The www redirect is a Cloudflare Redirect Rule,
+  // not Worker code.
   "assets": {
     "directory": "./dist",
-    "binding": "ASSETS",
-    // Without this, the asset handler answers before the Worker and the www
-    // redirect never runs. Every request goes through the Worker, which
-    // forwards non-www hosts to the ASSETS binding.
-    "run_worker_first": true,
     // Astro writes manual/<slug>/index.html while YARD writes <Class>.html.
     // `auto-trailing-slash` keeps both URL shapes working.
     "html_handling": "auto-trailing-slash",

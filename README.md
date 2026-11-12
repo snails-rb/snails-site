@@ -77,7 +77,7 @@ The build fails when the table stops matching what the page reads: a renamed col
 
 Cloudflare Workers serves the site at <https://snails-rb.org/> from the domain root. Every internal link is built from `base` in `astro.config.mjs`; the default is `/`, and `SITE_BASE=/snails-site/` previews the retired GitHub Pages path.
 
-`wrangler.jsonc` points the Worker at `dist/`. `.github/workflows/site.yml` builds and tests the artifact, then deploys it on `main`; Cloudflare does not build the site, so Ruby and YARD stay pinned in Actions. `worker.js` serves the files through the `ASSETS` binding and redirects `www.snails-rb.org` to the apex.
+`wrangler.jsonc` points the Worker at `dist/`. `.github/workflows/site.yml` builds and tests the artifact, then deploys it on `main`; Cloudflare does not build the site, so Ruby and YARD stay pinned in Actions.
 
 ## Checks
 
