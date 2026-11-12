@@ -1,0 +1,16 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "snails-site",
+  "compatibility_date": "2026-11-12",
+  "preview_urls": true,
+  // GitHub Actions builds dist/ and uploads it; Cloudflare serves the files and
+  // never runs a second build. The custom domain is attached in the Workers
+  // dashboard so the deploy token stays scoped to the Worker.
+  "assets": {
+    "directory": "./dist",
+    // Astro writes manual/<slug>/index.html while YARD writes <Class>.html.
+    // `auto-trailing-slash` keeps both URL shapes working.
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page",
+  },
+}
