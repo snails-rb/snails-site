@@ -13,6 +13,9 @@ node_modules/
 .astro/
 .bundle/
 
+# Wrangler local state
+.wrangler/
+
 # OS / editor
 .DS_Store
 *.swp
