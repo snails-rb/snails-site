@@ -43,6 +43,15 @@ export function loadChapters(dir = manualDir()) {
   });
 }
 
+// The manual has no landing page: the chapter list is in every chapter's
+// sidebar. Links to the manual go straight to the first chapter, in the same
+// order the sidebar uses.
+export function firstChapterUrl() {
+  const [firstChapter] = loadChapters();
+  if (!firstChapter) throw new Error(`${manualDir()} has no manual chapters`);
+  return url(`/manual/${firstChapter.slug}/`);
+}
+
 // `07-hotkeys.md#anchor` → `<base>manual/hotkeys/#anchor`. Chapter links are
 // the only root-relative links a chapter writes; they go through `url()` here
 // so the rendered HTML already carries the deploy path.

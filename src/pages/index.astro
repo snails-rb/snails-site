@@ -1,6 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
-import { url } from '../lib/manual.mjs';
+import { firstChapterUrl, url } from '../lib/manual.mjs';
 import { highlightCode } from '../lib/highlight.mjs';
 import { performanceFigures } from '../lib/performance.mjs';
 
@@ -211,7 +211,7 @@ const boot = figures.rowValues('Launch to first answer');
     </section>
 
     <div class="cards">
-      <a class="card" href={url('/manual/')}>
+      <a class="card" href={firstChapterUrl()}>
         <span class="card-title">Manual</span>
         <span class="card-body">The full guide, from install to deploy.</span>
         <span class="card-go">Read the manual →</span>

@@ -1,6 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
-import { url } from '../lib/manual.mjs';
+import { firstChapterUrl, url } from '../lib/manual.mjs';
 ---
 
 <Base title="Page not found">
@@ -8,7 +8,7 @@ import { url } from '../lib/manual.mjs';
     <h1>Page not found</h1>
     <p>
       The page you asked for is not here. Start from the <a href={url('/')}>landing page</a>,
-      the <a href={url('/manual/')}>manual</a>, or the <a href={url('/api/')}>API reference</a>.
+      the <a href={firstChapterUrl()}>manual</a>, or the <a href={url('/api/')}>API reference</a>.
     </p>
   </article>
 </Base>

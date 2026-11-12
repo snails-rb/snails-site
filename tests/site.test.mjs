@@ -117,7 +117,6 @@ test('url() rejects a relative path', () => {
 
 test('the built site has the landing page, the manual, and the API reference', () => {
   assert.ok(existsSync(path.join(dist, 'index.html')), 'run npm run build first');
-  assert.ok(existsSync(path.join(dist, 'manual', 'index.html')), 'manual entry missing');
   assert.ok(existsSync(path.join(dist, 'api', 'index.html')), 'API reference missing');
 
   const chapters = loadChapters();
@@ -129,18 +128,22 @@ test('the built site has the landing page, the manual, and the API reference', (
   }
 });
 
-test('/manual/ redirects to the first chapter instead of a duplicate index', () => {
+test('the manual has no landing page and no link points at one', () => {
   // The chapter list already lives in the sidebar of every chapter, so a
-  // separate manual landing page only repeated it. `/manual/` is a redirect
-  // page, and it has to point at the first chapter under the deploy path.
-  const firstChapter = loadChapters()[0];
-  const target = url(`/manual/${firstChapter.slug}/`);
-  const html = readFileSync(path.join(dist, 'manual', 'index.html'), 'utf8');
-  assert.match(html, new RegExp(`<meta http-equiv="refresh" content="0;url=${target}"`));
-  assert.ok(
-    existsSync(path.join(dist, 'manual', firstChapter.slug, 'index.html')),
-    `redirect target ${target} missing`,
-  );
+  // `/manual/` index would repeat it. There is no such page, and no link may
+  // point at it: a redirect page in between would paint before the chapter
+  // loaded, which is the flash this replaced.
+  assert.ok(!existsSync(path.join(dist, 'manual', 'index.html')), '/manual/ should not be built');
+
+  const entry = url('/manual/');
+  const offenders = [];
+  for (const file of htmlFiles(dist)) {
+    const html = readFileSync(file, 'utf8');
+    for (const match of html.matchAll(/href="([^"]+)"/g)) {
+      if (match[1] === entry) offenders.push(path.relative(dist, file));
+    }
+  }
+  assert.deepEqual(offenders, [], `links to /manual/:\n${offenders.join('\n')}`);
 });
 
 test('no link ignores the deploy path', () => {
