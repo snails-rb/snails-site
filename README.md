@@ -2,7 +2,7 @@
 
 The official Snails site: a landing page, the manual, and the API reference, built as one static site.
 
-Live at <https://snails-rb.org/> (Cloudflare Workers, served from the domain root).
+Live at <https://snails-rb.org/> (GitHub Pages, served through Cloudflare from the domain root).
 
 ## Run it
 
@@ -16,7 +16,7 @@ npm run dev          # http://localhost:4211/
 
 `npm run build` does both: it renders the API reference into `public/api/`, then builds the site into `dist/`. `npm test` checks the built output.
 
-To see the built site the way Cloudflare Workers serves it, run `npm run preview` after a build. Astro serves both dev and preview under `base`, so a link that ignores the configured base fails there too.
+To see the built site the way the host serves it, run `npm run preview` after a build. Astro serves both dev and preview under `base`, so a link that ignores the configured base fails there too.
 
 ## What goes where
 
@@ -75,9 +75,9 @@ The build fails when the table stops matching what the page reads: a renamed col
 
 ## Deploy path
 
-Cloudflare Workers serves the site at <https://snails-rb.org/> from the domain root. Every internal link is built from `base` in `astro.config.mjs`; the default is `/`, and `SITE_BASE=/snails-site/` previews the retired GitHub Pages path.
+GitHub Pages serves the site at <https://snails-rb.org/> from the domain root. Cloudflare proxies the domain; it does not host or build the files. Every internal link is built from `base` in `astro.config.mjs`; the default is `/`, and `SITE_BASE=/snails-site/` previews the old repository path.
 
-`wrangler.jsonc` points the Worker at `dist/`. `.github/workflows/site.yml` builds and tests the artifact, then deploys it on `main`; Cloudflare does not build the site, so Ruby and YARD stay pinned in Actions.
+`.github/workflows/site.yml` builds and tests the artifact, then deploys it to GitHub Pages on `main`. Ruby and YARD stay pinned in Actions, where `.ruby-version` and `Gemfile.lock` pin them.
 
 ## Checks
 
@@ -88,7 +88,7 @@ bin/build-api --check      # render the API twice and diff the results
 npm run preview            # serve dist/ from the built base
 ```
 
-`.github/workflows/site.yml` runs the checks on every pull request and deploys `dist/` to Cloudflare Workers on `main`.
+`.github/workflows/site.yml` runs the checks on every pull request and deploys `dist/` to GitHub Pages on `main`.
 
 ## Decisions
 

@@ -1,11 +1,8 @@
 name: site
 
 # One workflow builds the site, checks the artifact, and deploys that same
-# artifact to Cloudflare Workers. Cloudflare only serves the files; the build
-# stays in Actions so Ruby and YARD have one pinned environment.
-#
-# `wrangler` is pinned in package-lock. The custom domain is attached in the
-# Workers dashboard, not here, so the token only needs Worker write access.
+# artifact to GitHub Pages. Cloudflare proxies the domain; it does not build or
+# host the files.
 on:
   pull_request:
   push:
@@ -16,7 +13,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: site-${{ github.ref }}
+  group: pages-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -42,15 +39,25 @@ jobs:
       - run: npm test
       - run: bin/build-api --check
 
-      # The deploy step only runs on main, so validate the Worker config on PRs
-      # without needing the Cloudflare secrets.
-      - name: Check the Worker configuration
-        if: github.event_name == 'pull_request'
-        run: npx wrangler deploy --dry-run
-
-      - name: Deploy to Cloudflare Workers
+      # dist/ carries .nojekyll, which the Pages artifact drops unless hidden
+      # files are asked for.
+      - uses: actions/upload-pages-artifact@v5
         if: github.event_name != 'pull_request'
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: npx wrangler deploy
+        with:
+          path: dist
+          include-hidden-files: true
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v6
+      - id: deployment
+        uses: actions/deploy-pages@v5
