@@ -48,8 +48,9 @@ const boot = figures.rowValues('Launch to first answer');
         <p class="lede">
           Snails is a Rails-like framework that compiles API-only Ruby apps into one native
           binary. No Ruby runtime, no GVL, no Puma workers: one process serves requests on every
-          core and boots in single-digit milliseconds. Against Rails in cluster mode, that's ~3×
-          the throughput with over 20× less memory under load — and ~12× against a default Rails app.
+          core and boots in single-digit milliseconds. On our GET /up benchmark, that's about 3×
+          the throughput of Rails in cluster mode with roughly 10× or more peak-memory savings — and
+          ~12× against a default Rails app. A separate single-row DB read measures about 3.1×.
         </p>
 
         <div class="hero-actions">
@@ -181,21 +182,21 @@ const boot = figures.rowValues('Launch to first answer');
           <dt>p95 latency</dt>
           <dd>
             <span class="perf-number">{latency[0]}</span>
-            <span class="perf-note">Rails (cluster mode) {latency[1]}</span>
+            <span class="perf-note">Rails (cluster mode) {latency[2]}</span>
           </dd>
         </div>
         <div class="perf-stat">
           <dt>Startup time</dt>
           <dd>
             <span class="perf-number">{boot[0]}</span>
-            <span class="perf-note">Rails (default) {boot[2]}</span>
+            <span class="perf-note">Rails (default) {boot[1]}</span>
           </dd>
         </div>
         <div class="perf-stat">
           <dt>Memory under load</dt>
           <dd>
             <span class="perf-number">{memory[0]}</span>
-            <span class="perf-note">Rails (cluster mode) {memory[1]}</span>
+            <span class="perf-note">Rails (cluster mode) {memory[2]}</span>
           </dd>
         </div>
       </dl>
