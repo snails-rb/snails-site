@@ -79,7 +79,7 @@ Cloudflare Workers serves this repository at <https://snails-rb.org/>, so every 
 
 `wrangler.jsonc` names the Worker (`snails-site`) and points it at `dist/`. `.github/workflows/site.yml` builds and tests the artifact, then runs `npx wrangler deploy` on `main`. Cloudflare does not build the site: the Ruby and YARD step stays in Actions, where `.ruby-version` and `Gemfile.lock` pin it.
 
-The first deploy needs two repository secrets, `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. The token needs Worker write access for the account. The custom domain is attached once in the Workers dashboard; Cloudflare creates the DNS record and certificate. `www` is a separate custom domain or a Cloudflare redirect rule.
+The first deploy needs two repository secrets, `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. The token needs Worker write access for the account. The custom domains are attached once in the Workers dashboard; Cloudflare creates the DNS records and certificates. `worker.js` serves `dist/` through the `ASSETS` binding and redirects `www.snails-rb.org` to the apex.
 
 ## Checks
 
