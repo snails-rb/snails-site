@@ -2,7 +2,7 @@
 import '@fontsource-variable/jetbrains-mono';
 import '../styles/site.css';
 import '../styles/site-header.css';
-import { url } from '../lib/manual.mjs';
+import { firstChapterUrl } from '../lib/manual.mjs';
 
 // The header is on every page; the chapter sidebar belongs to the manual only.
 // A page that wants the sidebar passes the chapter list it should show. The
@@ -25,10 +25,10 @@ const withSidebar = chapters.length > 0;
   <body>
     <header class="site-header">
       <div class="site-header-inner">
-        <a class="brand" href={url('/')}>Snails</a>
+        <a class="brand" href="/">Snails</a>
         <nav class="site-nav">
-          <a class={section === 'manual' ? 'active' : ''} href={url('/manual/')}>Manual</a>
-          <a class={section === 'api' ? 'active' : ''} href={url('/api/')}>API</a>
+          <a class={section === 'manual' ? 'active' : ''} href={firstChapterUrl()}>Manual</a>
+          <a class={section === 'api' ? 'active' : ''} href="/api/">API</a>
         </nav>
       </div>
     </header>
@@ -40,7 +40,7 @@ const withSidebar = chapters.length > 0;
             <ul>
               {chapters.map((chapter) => (
                 <li class={chapter.slug === active ? 'active' : ''}>
-                  <a href={url(`/manual/${chapter.slug}/`)}>
+                  <a href={`/manual/${chapter.slug}/`}>
                     <span class="num">{chapter.number}</span>
                     {chapter.title}
                   </a>

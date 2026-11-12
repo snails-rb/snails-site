@@ -1,6 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
-import { url } from '../lib/manual.mjs';
+import { firstChapterUrl } from '../lib/manual.mjs';
 import { highlightCode } from '../lib/highlight.mjs';
 import { performanceFigures } from '../lib/performance.mjs';
 
@@ -53,7 +53,7 @@ const boot = figures.rowValues('Launch to first answer');
         </p>
 
         <div class="hero-actions">
-          <a class="button primary" href={url('/manual/getting-started/')}>Get started</a>
+          <a class="button primary" href="/manual/getting-started/">Get started</a>
           <a class="button quiet" href="https://github.com/snails-rb/snails">GitHub ↗</a>
         </div>
 
@@ -71,7 +71,7 @@ const boot = figures.rowValues('Launch to first answer');
         <p class="hero-note">
           After that, <code>snails new demo</code> creates a project. The installer needs
           <code>curl</code> and <code>tar</code>; the first build also needs <code>git</code>,
-          <code>make</code>, and a C compiler with the usual development headers. <a href={url('/manual/getting-started/')}>Full install guide →</a>
+          <code>make</code>, and a C compiler with the usual development headers. <a href="/manual/getting-started/">Full install guide →</a>
         </p>
         <p class="hero-status">Alpha. The public API can change between 0.x releases.</p>
       </div>
@@ -103,7 +103,7 @@ const boot = figures.rowValues('Launch to first answer');
       </p>
 
       <div class="feature-grid">
-        <a class="feature" href={url('/manual/coming-from-rails/')}>
+        <a class="feature" href="/manual/coming-from-rails/">
           <h3 class="feature-title">The Rails shape</h3>
           <span class="feature-body">
             Routes, controllers, migrations, forms, mail, and jobs keep the shape you know.
@@ -111,7 +111,7 @@ const boot = figures.rowValues('Launch to first answer');
           </span>
           <span class="feature-go">Coming from Rails →</span>
         </a>
-        <a class="feature" href={url('/manual/deploying/')}>
+        <a class="feature" href="/manual/deploying/">
           <h3 class="feature-title">One native binary</h3>
           <span class="feature-body">
             Your app, the framework, and the HTTP server compile into one file. The server needs
@@ -119,7 +119,7 @@ const boot = figures.rowValues('Launch to first answer');
           </span>
           <span class="feature-go">Deploying →</span>
         </a>
-        <a class="feature" href={url('/manual/welcome-to-snails/#how-it-compares')}>
+        <a class="feature" href="/manual/welcome-to-snails/#how-it-compares">
           <h3 class="feature-title">Every core, one process</h3>
           <span class="feature-body">
             Native code has no GVL, so a single process serves requests on all available cores.
@@ -127,7 +127,7 @@ const boot = figures.rowValues('Launch to first answer');
           </span>
           <span class="feature-go">How it compares →</span>
         </a>
-        <a class="feature" href={url('/manual/testing/')}>
+        <a class="feature" href="/manual/testing/">
           <h3 class="feature-title">Tests against a real server</h3>
           <span class="feature-body">
             <code>bin/test</code> builds the app, boots it on a spare port, and sends real HTTP
@@ -204,19 +204,19 @@ const boot = figures.rowValues('Launch to first answer');
         Medians of three 15-second runs with request logging off; startup time from five runs. The
         route serves JSON and touches no database or view, so this measures the request path. Ratios
         transfer between machines; absolute figures belong to the machine that ran them. See{' '}
-        <a href={url('/manual/welcome-to-snails/#how-it-compares')}>How it compares</a> in the manual
+        <a href="/manual/welcome-to-snails/#how-it-compares">How it compares</a> in the manual
         for the full table, and <a href="https://github.com/snails-rb/snails-benchmark">snails-benchmark</a>
         for the method and raw results.
       </p>
     </section>
 
     <div class="cards">
-      <a class="card" href={url('/manual/')}>
+      <a class="card" href={firstChapterUrl()}>
         <span class="card-title">Manual</span>
         <span class="card-body">The full guide, from install to deploy.</span>
         <span class="card-go">Read the manual →</span>
       </a>
-      <a class="card" href={url('/api/')}>
+      <a class="card" href="/api/">
         <span class="card-title">API reference</span>
         <span class="card-body">The runtime's public surface, generated from its comments.</span>
         <span class="card-go">Browse the API →</span>

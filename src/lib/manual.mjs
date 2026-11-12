@@ -1,9 +1,7 @@
 // Manual loader — the content input is the vendored manual/ copy of
 // snails-rb/snails. The two-digit prefix is the reading order and stays out of
 // URLs; the rest of the filename is the slug. Chapters link to each other by
-// filename, and every URL the site emits goes through `url()` so the deploy
-// path (the domain root, or a subpath when SITE_BASE overrides it) stays in
-// one place.
+// filename, and the loader rewrites those links to the chapter's site path.
 
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
@@ -11,18 +9,6 @@ import { marked, Renderer } from 'marked';
 import { highlightCode } from './highlight.mjs';
 
 const DEFAULT_DIR = path.resolve(process.cwd(), 'manual');
-
-// Mirrors astro.config.mjs: the domain root is the default; SITE_BASE overrides it.
-const base = process.env.SITE_BASE ?? '/';
-const prefix = base.endsWith('/') ? base.slice(0, -1) : base;
-
-// `url('/manual/welcome/')` → `/manual/welcome/`.
-export function url(absolutePath) {
-  if (!absolutePath.startsWith('/')) {
-    throw new Error(`url() expects a root-relative path, got ${absolutePath}`);
-  }
-  return prefix + absolutePath;
-}
 
 export function manualDir() {
   return process.env.MANUAL_DIR || DEFAULT_DIR;
@@ -43,13 +29,22 @@ export function loadChapters(dir = manualDir()) {
   });
 }
 
-// `07-hotkeys.md#anchor` → `<base>manual/hotkeys/#anchor`. Chapter links are
-// the only root-relative links a chapter writes; they go through `url()` here
-// so the rendered HTML already carries the deploy path.
+// The manual has no landing page: the chapter list is in every chapter's
+// sidebar. Links to the manual go straight to the first chapter, in the same
+// order the sidebar uses.
+export function firstChapterUrl() {
+  const [firstChapter] = loadChapters();
+  if (!firstChapter) throw new Error(`${manualDir()} has no manual chapters`);
+  return `/manual/${firstChapter.slug}/`;
+}
+
+// `07-hotkeys.md#anchor` → `/manual/hotkeys/#anchor`. Chapter links are the
+// only links a chapter writes as filenames; the rewrite turns them into site
+// paths.
 export function rewriteLinks(markdown) {
   return markdown.replace(
     /\]\((\d\d)-([\w-]+)\.md(#[^)]*)?\)/g,
-    (_, _number, slug, fragment = '') => `](${url(`/manual/${slug}/`)}${fragment})`,
+    (_, _number, slug, fragment = '') => `](/manual/${slug}/${fragment})`,
   );
 }
 

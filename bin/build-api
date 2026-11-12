@@ -52,9 +52,18 @@ cleanup_dirs+=("$stage")
 cp -R "$src_root/runtime" "$stage/runtime"
 cp "$ROOT/templates/yard/api-index.md" "$stage/api-index.md"
 
-# Same default as astro.config.mjs: the site is served from the domain root.
-# The YARD header and footer link back to the site, so they need the base.
-export SITE_BASE="${SITE_BASE:-/}"
+# The API header links to the manual entry, the first chapter, like every other
+# page's header; there is no `/manual/` landing page to send visitors through.
+# The glob order matches the chapter order loadChapters() uses.
+first_chapter=""
+for file in "$ROOT"/manual/[0-9][0-9]-*.md; do
+  chapter="${file##*/}"
+  [[ $chapter =~ ^[0-9][0-9]-[A-Za-z0-9_-]+\.md$ ]] || continue
+  first_chapter=$chapter
+  break
+done
+[[ -n $first_chapter ]] || { echo "[build-api] no manual chapter under $ROOT/manual" >&2; exit 1; }
+export MANUAL_ENTRY_URL="/manual/${first_chapter:3:-3}/"
 
 rbs_files=()
 while IFS= read -r file; do rbs_files+=("$file"); done < <(cd "$stage" && find runtime -name '*.rbs' | sort)

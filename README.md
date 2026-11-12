@@ -16,18 +16,17 @@ npm run dev          # http://localhost:4211/
 
 `npm run build` does both: it renders the API reference into `public/api/`, then builds the site into `dist/`. `npm test` checks the built output.
 
-To see the built site the way the host serves it, run `npm run preview` after a build. Astro serves both dev and preview under `base`, so a link that ignores the configured base fails there too.
+To see the built site the way the host serves it, run `npm run preview` after a build; it serves `dist/` from the same domain root GitHub Pages uses.
 
 ## What goes where
 
 | Path | Content | Source |
 |---|---|---|
 | `/` | landing page | `src/pages/index.astro` |
-| `/manual/` | redirect to the first chapter | `astro.config.mjs` |
 | `/manual/<slug>/` | one page per manual chapter | `manual/` (vendored) |
 | `/api/` | API reference | `runtime/` in [`snails-rb/snails`](https://github.com/snails-rb/snails), rendered by YARD |
 
-There is no manual landing page: the chapter list is in every chapter's sidebar, so `/manual/` only redirects to the first chapter (a client-side `<meta refresh>`, since the site is static).
+There is no manual landing page: the chapter list is in every chapter's sidebar, so every link to the manual goes straight to the first chapter. `/manual/` is not a route.
 
 The site holds a copy of the manual and of nothing else. `runtime/` lives only in the Snails repo — `bin/build-api` fetches it at build time, so the API reference can never describe an older tree than the one the source has. The manual copy is committed because the chapter list is part of the site's own navigation; refresh it instead of editing it:
 
@@ -75,7 +74,7 @@ The build fails when the table stops matching what the page reads: a renamed col
 
 ## Deploy path
 
-GitHub Pages serves the site at <https://snails-rb.org/> from the domain root. Cloudflare proxies the domain; it does not host or build the files. Every internal link is built from `base` in `astro.config.mjs`; the default is `/`, and `SITE_BASE=/snails-site/` previews the old repository path.
+GitHub Pages serves the site at <https://snails-rb.org/> from the domain root. Cloudflare proxies the domain; it does not host or build the files. Every internal link is root-relative, so there is no path prefix to configure.
 
 `.github/workflows/site.yml` builds and tests the artifact, then deploys it to GitHub Pages on `main`. Ruby and YARD stay pinned in Actions, where `.ruby-version` and `Gemfile.lock` pin them.
 
@@ -83,9 +82,9 @@ GitHub Pages serves the site at <https://snails-rb.org/> from the domain root. C
 
 ```sh
 npm run build              # render the API reference, then build dist/
-npm test                   # built output: pages, links, deploy path, type scale
+npm test                   # built output: pages, links, type scale
 bin/build-api --check      # render the API twice and diff the results
-npm run preview            # serve dist/ from the built base
+npm run preview            # serve dist/ from the domain root
 ```
 
 `.github/workflows/site.yml` runs the checks on every pull request and deploys `dist/` to GitHub Pages on `main`.

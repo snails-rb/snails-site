@@ -1,6 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { loadChapters, renderMarkdown, url } from '../../lib/manual.mjs';
+import { loadChapters, renderMarkdown } from '../../lib/manual.mjs';
 
 export function getStaticPaths() {
   return loadChapters().map((chapter) => ({ params: { slug: chapter.slug }, props: { chapter } }));
@@ -23,8 +23,8 @@ const next = chapters[index + 1] ?? null;
       )
     }
     <div class="pager">
-      <span>{previous && <a href={url(`/manual/${previous.slug}/`)}>← {previous.title}</a>}</span>
-      <span>{next && <a href={url(`/manual/${next.slug}/`)}>{next.title} →</a>}</span>
+      <span>{previous && <a href={`/manual/${previous.slug}/`}>← {previous.title}</a>}</span>
+      <span>{next && <a href={`/manual/${next.slug}/`}>{next.title} →</a>}</span>
     </div>
   </article>
 </Base>
