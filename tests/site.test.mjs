@@ -1,12 +1,10 @@
-// The site's own checks. Five things can break silently:
+// The site's own checks. Four things can break silently:
 //
 //   1. a chapter that does not parse, or a chapter link that points nowhere;
 //   2. the API index rendering the source repo's own README instead of the
 //      site's page, which YARD does whenever one sits in its working directory;
-//   3. a root-absolute link that ignores a configured subpath, or one that
-//      still carries the retired /snails-site/ prefix;
-//   4. a font size that names no step of the type scale;
-//   5. a code block that lost its highlighting, or a colour that escaped the
+//   3. a font size that names no step of the type scale;
+//   4. a code block that lost its highlighting, or a colour that escaped the
 //      palette in tokens.css.
 //
 // Everything here runs against the build output, so it catches what the site
@@ -16,10 +14,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
-import { loadChapters, renderMarkdown, url } from '../src/lib/manual.mjs';
+import { loadChapters, renderMarkdown } from '../src/lib/manual.mjs';
 import { HIGHLIGHT_LANGUAGES } from '../src/lib/highlight.mjs';
 
-const base = process.env.SITE_BASE ?? '/';
 const dist = path.resolve(process.cwd(), 'dist');
 
 function htmlFiles(dir) {
@@ -54,12 +51,12 @@ test('inter-chapter links resolve to existing chapters', () => {
   }
 });
 
-test('renderMarkdown adds heading anchors and rewrites chapter links through url()', () => {
+test('renderMarkdown adds heading anchors and rewrites chapter links', () => {
   const html = renderMarkdown(
     '## Run it\n\nSee [hotkeys](07-hotkeys.md#panes) and `bin/dev`.\n\n```sh\nbin/dev\n```\n',
   );
   assert.match(html, /<h2 id="run-it">/);
-  assert.ok(html.includes(`href="${url('/manual/hotkeys/')}#panes"`), html);
+  assert.ok(html.includes('href="/manual/hotkeys/#panes"'), html);
   assert.match(html, /<code>bin\/dev<\/code>/);
   assert.match(html, /<pre class="code language-sh"[^>]*>/);
 });
@@ -111,10 +108,6 @@ test('no highlighted block carries a literal colour', () => {
   assert.deepEqual(offenders, [], `literal colours in highlighted blocks:\n${offenders.join('\n')}`);
 });
 
-test('url() rejects a relative path', () => {
-  assert.throws(() => url('manual/'), /root-relative/);
-});
-
 test('the built site has the landing page, the manual, and the API reference', () => {
   assert.ok(existsSync(path.join(dist, 'index.html')), 'run npm run build first');
   assert.ok(existsSync(path.join(dist, 'api', 'index.html')), 'API reference missing');
@@ -135,7 +128,7 @@ test('the manual has no landing page and no link points at one', () => {
   // loaded, which is the flash this replaced.
   assert.ok(!existsSync(path.join(dist, 'manual', 'index.html')), '/manual/ should not be built');
 
-  const entry = url('/manual/');
+  const entry = '/manual/';
   const offenders = [];
   for (const file of htmlFiles(dist)) {
     const html = readFileSync(file, 'utf8');
@@ -146,39 +139,6 @@ test('the manual has no landing page and no link points at one', () => {
   assert.deepEqual(offenders, [], `links to /manual/:\n${offenders.join('\n')}`);
 });
 
-test('no link ignores the deploy path', () => {
-  // Internal links must start with the base. When the base is a subpath, a
-  // root-absolute href like /manual/x/ works locally at the root and 404s on
-  // deploy. With the domain root, the retired-prefix test below catches the
-  // migration case instead.
-  const offenders = [];
-  for (const file of htmlFiles(dist)) {
-    const html = readFileSync(file, 'utf8');
-    for (const match of html.matchAll(/(?:href|src)="(\/[^"]*)"/g)) {
-      if (!match[1].startsWith(base)) offenders.push(`${path.relative(dist, file)} → ${match[1]}`);
-    }
-  }
-  assert.deepEqual(offenders, [], `links outside ${base}:\n${offenders.join('\n')}`);
-});
-
-test('no link carries the retired repository path', (t) => {
-  // The site moved from GitHub Pages under /snails-site/ to its own domain
-  // root. A link that still carries the old prefix works only on the old host,
-  // so catch it while the root is the configured base.
-  if (base !== '/') {
-    t.skip('the configured base is the retired repository path for this run');
-    return;
-  }
-  const offenders = [];
-  for (const file of htmlFiles(dist)) {
-    const html = readFileSync(file, 'utf8');
-    for (const match of html.matchAll(/(?:href|src)="(\/snails-site\/[^"]*)"/g)) {
-      offenders.push(`${path.relative(dist, file)} → ${match[1]}`);
-    }
-  }
-  assert.deepEqual(offenders, [], `links to the retired repository path:\n${offenders.join('\n')}`);
-});
-
 test('every internal link resolves to a built file', () => {
   const missing = [];
   for (const file of htmlFiles(dist)) {
@@ -187,8 +147,7 @@ test('every internal link resolves to a built file', () => {
       const target = match[1];
       if (!target.startsWith('/') || target.startsWith('//')) continue;
       const withoutHash = target.split('#')[0];
-      if (!withoutHash.startsWith(base)) continue;
-      const relative = withoutHash.slice(base.length);
+      const relative = withoutHash.slice(1);
       const direct = path.join(dist, relative);
       // A directory URL resolves to its index.html, the way Pages serves it.
       const asIndex = path.join(dist, relative, 'index.html');
