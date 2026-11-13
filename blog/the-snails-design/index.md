@@ -17,17 +17,17 @@ The framework does not remove review. It makes review the point. The agent write
 
 ## The Rails conventions are predictable for agents and reviewers
 
-Routes live in `config/routes.rb`, controllers are classes with actions, forms own validation, mailers and jobs have their own folders, and migrations are numbered files. A new endpoint has one obvious place, and a reviewer can find the request path without a map. The conventions are predictable for both an agent and a reviewer: the agent can add code without inventing a layout, and the reviewer knows where to look. The [Coming from Rails](/manual/coming-from-rails/) chapter is the translation table for the habits that carry over and the ones that do not.
+The point of the Rails conventions is predictability: an agent can add code without inventing a layout, and a reviewer knows where to look. Routes live in `config/routes.rb`, controllers are classes with actions, forms own validation, mailers and jobs have their own folders, and migrations are numbered files. A new endpoint has one obvious place, and a reviewer can find the request path without a map. The [Coming from Rails](/manual/coming-from-rails/) chapter is the translation table for the habits that carry over and the ones that do not.
 
 ## The API is the product
 
-Snails has no HTML views, no asset pipeline, and no Hotwire. Controllers answer JSON, a redirect, or a status. The frontend can live in the same repository or its own; the JSON API is the interface between them.
-
-Rails 7 made Hotwire (Turbo and Stimulus) the default frontend for new apps, and that stack grew out of Basecamp's server-rendered product. With coding agents, a backend and a frontend are two stacks an agent can maintain, and the JSON API gives both sides a clear interface. The backend does not choose React, a native app, or a server-rendered page for you.
+The API is the product, so the frontend is a separate choice. Rails 7 made Hotwire (Turbo and Stimulus) the default frontend for new apps, and that stack grew out of Basecamp's server-rendered product. With coding agents, a backend and a frontend are two stacks an agent can maintain, and the JSON API gives both sides a clear interface. Snails keeps the backend at that JSON API. It has no HTML views, no asset pipeline, and no Hotwire. Controllers answer JSON, a redirect, or a status. The frontend can live in the same repository or its own; the JSON API is the interface between them. The backend does not choose React, a native app, or a server-rendered page for you.
 
 The framework has no session store. The frontend owns rendering; the app owns its credential model and session design. The framework provides the HTTP authentication handshake, not a user model.
 
 ## The model layer is a standard API over SQL
+
+Coding agents write SQL well, so an ORM's abstraction adds little for them. What they need is a standard API for the common reads and writes; without one, every model grows its own helpers and the code becomes inconsistent. `Sqlx` is that standard API, not a domain model. It keeps the common path the same across models, so the agent calls the same methods and the reviewer reads the SQL and the bound values.
 
 A model names its table. The columns come from the schema, and the inherited reads and writes operate on the table. There are no associations, callbacks, or model validations. Validation belongs to form objects, and the schema constraint is the model layer's last line. The common reads and writes use a small set of methods with parameterized values; joins, views, and aggregates use raw SQL.
 
@@ -39,11 +39,11 @@ end
 Comment.fetch_many({ post_id: post.id }, order: :asc)
 ```
 
-Coding agents write SQL well, so an ORM's abstraction adds little for them. What they need is a standard API for the common reads and writes; without one, every model grows its own helpers and the code becomes inconsistent. `Sqlx` is that standard API, not a domain model. It keeps the common path the same across models, so the agent calls the same methods and the reviewer reads the SQL and the bound values.
-
 The model layer is small on purpose: the SQL is the source, and the framework gives the common queries a standard API. A join or a cascade is written as a query where the reviewer can read it. An empty condition is refused unless the caller explicitly asks for an ordered whole-table read. Writes raise when the database rejects them.
 
 ## Migrations are SQL
+
+The migration is SQL because the agent writes the statement the reviewer reads. There is no Ruby DSL to translate, and a human does not need to hand-write the file. The schema dump comes from the same files, so the migration and the generated column readers share one source.
 
 A schema change is a numbered SQL file under `db/migrate/`. `snails migrate apply` runs the pending files in order, and `snails migrate dump` regenerates `db/schema.sql`. `snails migrate verify` checks the dump against a replay, and `snails migrate check` stops a deploy while anything is pending. If another system owns the schema, `DB_OWNER="external"` tells the CLI to refuse DDL.
 
@@ -51,8 +51,6 @@ A schema change is a numbered SQL file under `db/migrate/`. `snails migrate appl
 -- Slugs give posts a stable URL segment.
 ALTER TABLE posts ADD COLUMN slug TEXT;
 ```
-
-The migration is SQL because the agent writes the statement the reviewer reads. There is no Ruby DSL to translate, and a human does not need to hand-write the file. The schema dump comes from the same files, so the migration and the generated column readers share one source.
 
 ## Performance is a key design choice
 
@@ -64,9 +62,7 @@ The no-gem choice is what coding agents make practical. A gem assumes a Ruby run
 
 ## Tests run against the real server
 
-`bin/test` builds the app, boots it on a spare port, and sends real HTTP requests through the harness. One fresh server serves the suite; each case resets the tables it declares. Nothing mocks the framework out of the way.
-
-The harness makes integration the default. Stubs and mocks are easier to write, so an agent left to choose will often produce a suite that describes the system instead of exercising it. The real server makes the default test send real HTTP requests, so a passing suite exercises the app.
+Stubs and mocks are easier to write, so an agent left to choose will often produce a suite that describes the system instead of exercising it. The harness makes integration the default: `bin/test` builds the app, boots it on a spare port, and sends real HTTP requests through the harness. One fresh server serves the suite; each case resets the tables it declares. Nothing mocks the framework out of the way. A passing suite exercises the app.
 
 ## The workflow these choices serve
 
