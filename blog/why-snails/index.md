@@ -39,7 +39,7 @@ The cost is the object model: no lazy loading, no association graph, no callback
 
 ## Gem compatibility
 
-The app, the framework, and the HTTP server compile into one native executable. App code stays Ruby, and the server does not need a Ruby runtime. The CLI is bash as well, so neither the command line nor the server carries a Ruby installation.
+Snails does not load gems. The app, the framework, and the HTTP server are compiled together, so there is no Ruby runtime and no Bundler load path for a gem to use.
 
 The clearest cost is the Ruby gem ecosystem. A gem that expects a Ruby runtime, a Bundler load path, or a native extension has no place in the build. When an app needs a small, well-understood behavior, writing it in the app can be cheaper than carrying a dependency that no longer fits, but the app owns that code, its tests, and its security updates. Not every gem is replaceable.
 
@@ -58,7 +58,7 @@ The cost is the Rails migration DSL and its conveniences. There is no generated 
 
 ## One native binary
 
-The app builds into one executable that includes the framework and the HTTP server. The machine that runs it does not need Ruby, Bundler, or a separate application server. One process serves requests on the available cores without a worker process per core, and memory does not multiply with a worker count.
+The app builds into one executable that includes the framework and the HTTP server. App code stays Ruby; the compiler turns it into the binary. The CLI is bash as well, so neither the command line nor the server carries a Ruby installation. The machine that runs the binary does not need Ruby, Bundler, or a separate application server. One process serves requests on the available cores without a worker process per core, and memory does not multiply with a worker count.
 
 Snails 1.0 runs one server process. `WORKERS` and `-w` are accepted but do not add processes; run more copies or containers when one process is not enough.
 
