@@ -5,7 +5,7 @@ date: 2026-11-13
 author: Snails
 ---
 
-Snails is a small Rails for API-only apps. It keeps the conventions that make an API readable — routes, controllers, form objects, mailers, jobs, and a conventional folder layout — and leaves out the layers that assume a server-rendered monolith, a Ruby runtime, or a full ORM. This post explains six choices behind that boundary and what each one costs. The [manual](/manual/welcome-to-snails/) is the current reference for behavior.
+Snails is a Rails-like framework for API-only Ruby apps. It keeps the conventions that make an API readable — routes, controllers, form objects, mailers, jobs, and a conventional folder layout — and leaves out the layers that assume a server-rendered monolith, a Ruby runtime, or a full ORM. This post explains six choices behind that boundary and what each one costs. The [manual](/manual/welcome-to-snails/) is the current reference for behavior.
 
 The design assumes that tests and review stay in the loop, and that coding agents do much of the implementation. That is not a claim that agents replace reviewers. It is a reason to keep the common path small enough to read and to make the default path the one you want reviewed. Snails is not a Rails replacement. If you need server-rendered pages, the Ruby gem ecosystem, or Active Record's object model, Rails is the better fit.
 
