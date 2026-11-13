@@ -35,9 +35,6 @@ const installCommandHtml =
 // The landing figures are maintained here by hand. Update them with the
 // benchmark results when the numbers change; the manual's Performance chapter
 // and snails-benchmark carry the full record and method.
-// The landing figures are maintained here by hand. Update them with the
-// benchmark results when the numbers change; the manual's Performance chapter
-// and snails-benchmark carry the full record and method.
 const figures = {
   series: [
     { label: 'Snails', requests: 50865 },
@@ -62,8 +59,9 @@ const startup = { snails: '9 ms', railsDefault: '1.0 s' };
           Snails is a Rails-like framework that compiles API-only Ruby apps into one native
           binary. No Ruby runtime, no GVL, no Puma workers: one process serves requests on every
           core and boots in single-digit milliseconds. On our GET /up benchmark, that's about 3×
-          the throughput of Rails in cluster mode with roughly 10× or more peak-memory savings — and
-          ~12× against a default Rails app. A separate single-row DB read measures about 3.1×.
+          the throughput of Rails in cluster mode, with peak-memory savings of 10× or more under load,
+          and about 12× the throughput of a default Rails app. A separate single-row DB read measures
+          about 3.1×.
         </p>
 
         <div class="hero-actions">
@@ -119,9 +117,9 @@ const startup = { snails: '9 ms', railsDefault: '1.0 s' };
 
       <div class="feature-grid">
         <a class="feature" href="/manual/coming-from-rails/">
-          <h3 class="feature-title">The Rails shape</h3>
+          <h3 class="feature-title">The Rails conventions</h3>
           <span class="feature-body">
-            Routes, controllers, migrations, forms, mail, and jobs keep the shape you know.
+            Routes, controllers, migrations, forms, mail, and jobs use the conventions you know.
             Models are plain classes over your tables, so the SQL stays visible.
           </span>
           <span class="feature-go">Coming from Rails →</span>
@@ -138,7 +136,7 @@ const startup = { snails: '9 ms', railsDefault: '1.0 s' };
           <h3 class="feature-title">Every core, one process</h3>
           <span class="feature-body">
             Native code has no GVL, so a single process serves requests on all available cores.
-            Memory does not multiply with worker count.
+            Memory does not grow with worker count.
           </span>
           <span class="feature-go">Performance →</span>
         </a>
@@ -153,8 +151,8 @@ const startup = { snails: '9 ms', railsDefault: '1.0 s' };
       </div>
 
       <p class="scope">
-        API-only by design: no HTML views, asset pipeline, or CSRF tokens. If you need
-        server-rendered pages, this is the wrong tool.
+        API-only by design: no HTML views, no asset pipeline, and no CSRF tokens. If you
+        need server-rendered pages, another framework is a better fit.
       </p>
     </section>
 
