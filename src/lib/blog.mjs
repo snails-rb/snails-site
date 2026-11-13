@@ -185,11 +185,13 @@ function rfc822(date) {
 }
 
 function absoluteHtml(html, pageUrl) {
-  return html
-    .replace(/(href|src)="\/(?![\/])/g, (_, attribute) => `${attribute}="${SITE_URL}/`)
-    .replace(/(href|src)="#([^"]+)"/g, (_, attribute, fragment) => {
-      return `${attribute}="${pageUrl}#${fragment}"`;
-    });
+  // Feed readers have no site origin. Resolve every link and image against the
+  // post URL so a fragment, a root path, and a file next to the post all point
+  // at the article rather than at the feed.
+  return html.replace(/(href|src)="([^"]*)"/g, (_, attribute, target) => {
+    const absolute = new URL(target, pageUrl).href;
+    return `${attribute}="${absolute}"`;
+  });
 }
 
 /**
