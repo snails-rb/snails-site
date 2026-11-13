@@ -6,11 +6,11 @@ import { performanceFigures } from '../lib/performance.mjs';
 
 const routeCode = [
   '# inside Snails::RouteTable.table',
-  '*resources("/posts", Api::PostsController, :json)',
+  'resources("/posts", PostsController, :json)',
 ].join('\n');
 
 const controllerCode = [
-  'class Api::PostsController < Api::ApplicationController',
+  'class PostsController < ActionController::API',
   '  def index',
   '    render(json: posts)',
   '  end',
@@ -85,7 +85,7 @@ const boot = figures.rowValues('Launch to first answer');
         </div>
         <div class="demo-code" set:html={highlightCode(routeCode, 'ruby')} />
         <div class="demo-head">
-          <span class="demo-file">app/controllers/api/posts_controller.rb</span>
+          <span class="demo-file">app/controllers/posts_controller.rb</span>
         </div>
         <div class="demo-code" set:html={highlightCode(controllerCode, 'ruby')} />
         <div class="demo-term" role="group" aria-label="Test output">
