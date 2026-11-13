@@ -45,9 +45,9 @@ const figures = {
 const fastest = Math.max(...figures.series.map((target) => target.requests));
 const clusterRatio = String(Math.round(figures.series[0].requests / figures.series[1].requests));
 const defaultsRatio = (figures.series[0].requests / figures.series[2].requests).toFixed(1);
-const latency = ['1.3 ms', '4.7 ms'];
-const memory = ['30 MiB', '701 MiB'];
-const boot = ['9 ms', '1.0 s', '1.0 s'];
+const latency = { snails: '1.3 ms', railsCluster: '4.7 ms' };
+const memory = { snails: '30 MiB', railsCluster: '701 MiB' };
+const startup = { snails: '9 ms', railsDefault: '1.0 s' };
 ---
 <Base wide>
   <article class="front">
@@ -192,22 +192,22 @@ const boot = ['9 ms', '1.0 s', '1.0 s'];
         <div class="perf-stat">
           <dt>p95 latency</dt>
           <dd>
-            <span class="perf-number">{latency[0]}</span>
-            <span class="perf-note">Rails (cluster mode) {latency[1]}</span>
+            <span class="perf-number">{latency.snails}</span>
+            <span class="perf-note">Rails (cluster mode) {latency.railsCluster}</span>
           </dd>
         </div>
         <div class="perf-stat">
           <dt>Startup time</dt>
           <dd>
-            <span class="perf-number">{boot[0]}</span>
-            <span class="perf-note">Rails (default) {boot[2]}</span>
+            <span class="perf-number">{startup.snails}</span>
+            <span class="perf-note">Rails (default) {startup.railsDefault}</span>
           </dd>
         </div>
         <div class="perf-stat">
           <dt>Memory under load</dt>
           <dd>
-            <span class="perf-number">{memory[0]}</span>
-            <span class="perf-note">Rails (cluster mode) {memory[1]}</span>
+            <span class="perf-number">{memory.snails}</span>
+            <span class="perf-note">Rails (cluster mode) {memory.railsCluster}</span>
           </dd>
         </div>
       </dl>
@@ -217,8 +217,8 @@ const boot = ['9 ms', '1.0 s', '1.0 s'];
         route serves JSON and touches no database or view, so this measures the request path. Ratios
         transfer between machines; absolute figures belong to the machine that ran them. See{' '}
         <a href="/manual/welcome-to-snails/#how-it-compares">How it compares</a> in the manual
-        for the full table, and <a href="https://github.com/snails-rb/snails-benchmark">snails-benchmark</a>
-        for the method and raw results.
+        for the full table, and <a href="https://github.com/snails-rb/snails-benchmark">snails-benchmark</a> for
+        the method and raw results.
       </p>
     </section>
 
