@@ -115,8 +115,10 @@ export function performanceFigures(chapters = loadChapters()) {
       return values;
     },
     // Ratios are computed, never copied: a refreshed table must not leave a
-    // stale "3.1×" above fresh numbers.
-    clusterRatio: (snails / cluster).toFixed(1),
+    // stale "3.1×" above fresh numbers. The cluster ratio stays a whole number
+    // ("about 3×") because the decimal moves between runs (2.9–3.1); the
+    // default-Rails ratio is quoted with one decimal.
+    clusterRatio: String(Math.round(snails / cluster)),
     defaultsRatio: (snails / rails).toFixed(1),
   };
 }
