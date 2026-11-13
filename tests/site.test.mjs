@@ -137,7 +137,6 @@ test('every blog post has the front matter the index and feed need', () => {
   // front matter. A missing field would build a page with no date or a feed
   // item with no summary, so the loader refuses before the build.
   const posts = loadPosts();
-  assert.ok(posts.length >= 1, 'expected at least the Why Snails post');
   const slugs = new Set();
   for (const post of posts) {
     assert.match(post.slug, /^[\w-]+$/);
@@ -154,21 +153,22 @@ test('every blog post has the front matter the index and feed need', () => {
 test('blog posts render with heading anchors and highlighted fences', () => {
   // Posts share the manual's renderer, so the same two regressions matter:
   // a heading that cannot be linked to, and a fence that lost the palette.
-  const offenders = [];
-  for (const post of loadPosts()) {
+  // Use a temporary post so the structure can land before the first article.
+  const dir = mkdtempSync(path.join(tmpdir(), 'snails-blog-render-'));
+  try {
+    mkdirSync(path.join(dir, 'render-check'), { recursive: true });
+    writeFileSync(
+      path.join(dir, 'render-check', 'index.md'),
+      '---\ntitle: Render check\ndescription: Render check summary\ndate: 2026-11-13\n---\n\n## Body\n\n```ruby\ndef x\n  1\nend\n```\n',
+    );
+    const [post] = loadPosts({ dir });
     const html = renderPostBody(post);
-    if (!/<h2 id="[^"]+">/.test(html)) {
-      offenders.push(`${post.slug} has no anchored H2`);
-    }
-    for (const match of post.body.matchAll(/^```([a-zA-Z]*)/gm)) {
-      const label = match[1] || 'text';
-      if (!HIGHLIGHT_LANGUAGES.includes(label)) offenders.push(`${post.slug} → ${label}`);
-    }
-    for (const match of html.matchAll(/(?:color|background):\s*(#[0-9a-fA-F]{3,8})/g)) {
-      offenders.push(`${post.slug} → ${match[1]}`);
-    }
+    assert.match(html, /<h2 id="body">/);
+    assert.match(html, /<pre class="code language-ruby"[^>]*>/);
+    assert.doesNotMatch(html, /color:#[0-9a-fA-F]{3,8}/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
   }
-  assert.deepEqual(offenders, [], `blog rendering problems:\n${offenders.join('\n')}`);
 });
 
 test('draft posts stay out of the published list', () => {
@@ -246,7 +246,8 @@ test('the feed carries every published post with absolute links', () => {
   const xml = readFileSync(path.join(dist, 'blog', 'rss.xml'), 'utf8');
   const posts = loadPosts();
   assert.match(xml, /<rss version="2.0"/);
-  assert.match(xml, /<content:encoded>/);
+  if (posts.length > 0) assert.match(xml, /<content:encoded>/);
+  assert.equal((xml.match(/<item>/g) ?? []).length, posts.length);
   for (const post of posts) {
     const url = `https://snails-rb.org/blog/${post.slug}/`;
     assert.ok(xml.includes(`<link>${url}</link>`), `${post.slug} link missing from feed`);
@@ -257,10 +258,14 @@ test('the feed carries every published post with absolute links', () => {
     );
     assert.ok(xml.includes(`<title>${post.title}</title>`), `${post.slug} title missing`);
   }
-  assert.ok(
-    xml.includes(`<lastBuildDate>${new Date(`${posts[0].date}T00:00:00Z`).toUTCString()}</lastBuildDate>`),
-    'lastBuildDate is not the newest post date',
-  );
+  if (posts.length > 0) {
+    assert.ok(
+      xml.includes(
+        `<lastBuildDate>${new Date(`${posts[0].date}T00:00:00Z`).toUTCString()}</lastBuildDate>`,
+      ),
+      'lastBuildDate is not the newest post date',
+    );
+  }
   const drafts = loadPosts({ includeDrafts: true }).filter((post) => post.draft);
   for (const draft of drafts) {
     assert.ok(!xml.includes(`/blog/${draft.slug}/`), `draft ${draft.slug} leaked into the feed`);

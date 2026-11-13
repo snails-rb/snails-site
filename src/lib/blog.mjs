@@ -193,17 +193,14 @@ function absoluteHtml(html, pageUrl) {
 /**
  * Render the blog RSS feed. The feed carries the full post body, so a reader or
  * a newsletter can use the article without opening the site; links and images
- * are absolute because feed readers have no site origin.
+ * are absolute because feed readers have no site origin. An empty blog still
+ * has a valid feed so the site can ship the structure before its first post.
  *
  * @param {Array<object>} posts published posts, newest first
  * @returns {string} RSS 2.0 XML
- * @throws {Error} when there are no posts or a post has no body
+ * @throws {Error} when a post has no body
  */
 export function renderRss(posts) {
-  if (posts.length === 0) {
-    throw new Error('the blog feed needs at least one published post');
-  }
-
   const items = posts.map((post) => {
     const url = `${SITE_URL}/blog/${post.slug}/`;
     const html = absoluteHtml(renderPostBody(post), url);
@@ -218,14 +215,16 @@ export function renderRss(posts) {
 </item>`;
   });
 
+  const lastBuildDate =
+    posts.length > 0 ? `\n    <lastBuildDate>${rfc822(posts[0].date)}</lastBuildDate>` : '';
+
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
     <title>Snails Blog</title>
     <link>${SITE_URL}/blog/</link>
     <description>${escapeXml(FEED_DESCRIPTION)}</description>
-    <language>en</language>
-    <lastBuildDate>${rfc822(posts[0].date)}</lastBuildDate>
+    <language>en</language>${lastBuildDate}
     <atom:link href="${SITE_URL}/blog/rss.xml" rel="self" type="application/rss+xml"/>
 ${items.join('\n')}
   </channel>

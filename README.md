@@ -46,8 +46,8 @@ Posts are the site's own content, not a second copy of the manual. One folder pe
 
 ```yaml
 ---
-title: Why Snails
-description: Six design choices behind Snails, what each one buys, and what each one costs.
+title: A post title
+description: One or two sentences for the index, the page snippet, and the feed.
 date: 2026-11-13
 updated: 2026-11-20   # optional
 author: Snails        # optional; defaults to Snails
@@ -68,7 +68,7 @@ The post URL is the canonical address. When the same article appears on another 
 The intro has three forms, and they answer different questions:
 
 - **Landing (`/`)** is the evaluation copy. One paragraph, outcome and comparison, not a stack inventory. It carries the benchmark and the deployment trade-off; the feature cards and manual links carry the detail.
-- **Manual `01-welcome-to-snails.md`** is the canonical definition. It lists the Rails shape and the limits, but no benchmark numbers — the [Performance chapter](manual/29-performance.md) owns those. The Snails README uses the same opening paragraph.
+- **Manual `01-welcome-to-snails.md`** is the canonical definition. It lists the Rails shape and the limits, but no benchmark numbers — the manual's "How it compares" section owns those. The Snails README uses the same opening paragraph.
 - **Blog (`/blog/`)** is the dated reasoning. A post can argue, cite, and record what was decided at the time; it is not the current reference. The manual wins when the two disagree, and a post that needs a new decision is a new post.
 
 If a sentence can move between the landing and the manual unchanged, treat it as definition copy and keep it in the manual. The landing must add the choice-making claim.
@@ -93,7 +93,7 @@ The `--syntax-*` roles in `src/styles/tokens.css` are the only place a code colo
 
 ## Landing page figures
 
-The performance section on `/` reads its numbers from the manual's comparison table (`manual/29-performance.md`, the "How it compares" table) through `src/lib/performance.mjs` — it does not carry a second copy. The manual is refreshed from the Snails repo on a schedule, so a copied set of figures would keep serving the old values after each refresh.
+The performance section on `/` reads its numbers from the manual's comparison table (`manual/01-welcome-to-snails.md`, the "How it compares" table) through `src/lib/performance.mjs` — it does not carry a second copy. The manual is refreshed from the Snails repo on a schedule, so a copied set of figures would keep serving the old values after each refresh.
 
 The build fails when the table stops matching what the page reads: a renamed column, a missing row, or a request count that is not a number. That turns silent drift into a build failure, which is the point — the fix is to update the loader together with the manual.
 
