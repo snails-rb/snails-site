@@ -1,20 +1,32 @@
-// The site's own checks. Four things can break silently:
+// The site's own checks. These can break silently:
 //
 //   1. a chapter that does not parse, or a chapter link that points nowhere;
 //   2. the API index rendering the source repo's own README instead of the
 //      site's page, which YARD does whenever one sits in its working directory;
 //   3. a font size that names no step of the type scale;
 //   4. a code block that lost its highlighting, or a colour that escaped the
-//      palette in tokens.css.
+//      palette in tokens.css;
+//   5. a blog post with missing front matter, a draft that reached the built
+//      site or feed, or a feed item with a relative link.
 //
 // Everything here runs against the build output, so it catches what the site
 // actually emits rather than what the templates look like they do.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { loadChapters, renderMarkdown } from '../src/lib/manual.mjs';
+import { formatPostDate, loadPosts, renderPostBody } from '../src/lib/blog.mjs';
 import { HIGHLIGHT_LANGUAGES } from '../src/lib/highlight.mjs';
 import { performanceFigures } from '../src/lib/performance.mjs';
 
@@ -27,6 +39,17 @@ function htmlFiles(dir) {
     if (entry.isDirectory()) return htmlFiles(full);
     return entry.name.endsWith('.html') ? [full] : [];
   });
+}
+
+function metaContent(html, name) {
+  const match = html.match(new RegExp(`<meta name="${name}" content="([^"]*)"`));
+  if (!match) return null;
+  return match[1]
+    .replaceAll('&quot;', '"')
+    .replaceAll('&#39;', "'")
+    .replaceAll('&lt;', '<')
+    .replaceAll('&gt;', '>')
+    .replaceAll('&amp;', '&');
 }
 
 test('every chapter in manual/ parses with a number, slug, and title', () => {
@@ -109,9 +132,93 @@ test('no highlighted block carries a literal colour', () => {
   assert.deepEqual(offenders, [], `literal colours in highlighted blocks:\n${offenders.join('\n')}`);
 });
 
-test('the built site has the landing page, the manual, and the API reference', () => {
+test('every blog post has the front matter the index and feed need', () => {
+  // A post folder is the URL slug; the title, summary, and date come from its
+  // front matter. A missing field would build a page with no date or a feed
+  // item with no summary, so the loader refuses before the build.
+  const posts = loadPosts();
+  const slugs = new Set();
+  for (const post of posts) {
+    assert.match(post.slug, /^[\w-]+$/);
+    assert.ok(!slugs.has(post.slug), `duplicate slug: ${post.slug}`);
+    slugs.add(post.slug);
+    assert.ok(post.title.length > 0, `${post.slug} needs a title`);
+    assert.ok(post.description.length > 0, `${post.slug} needs a description`);
+    assert.match(post.date, /^\d{4}-\d{2}-\d{2}$/);
+    assert.ok(!post.updated || post.updated >= post.date, `${post.slug} updated before date`);
+    assert.ok(!post.draft, `${post.slug} is a draft in the published list`);
+  }
+});
+
+test('blog posts render with heading anchors and highlighted fences', () => {
+  // Posts share the manual's renderer, so the same two regressions matter:
+  // a heading that cannot be linked to, and a fence that lost the palette.
+  // Use a temporary post so the structure can land before the first article.
+  const dir = mkdtempSync(path.join(tmpdir(), 'snails-blog-render-'));
+  try {
+    mkdirSync(path.join(dir, 'render-check'), { recursive: true });
+    writeFileSync(
+      path.join(dir, 'render-check', 'index.md'),
+      '---\ntitle: Render check\ndescription: Render check summary\ndate: 2026-11-13\n---\n\n## Body\n\n```ruby\ndef x\n  1\nend\n```\n',
+    );
+    const [post] = loadPosts({ dir });
+    const html = renderPostBody(post);
+    assert.match(html, /<h2 id="body">/);
+    assert.match(html, /<pre class="code language-ruby"[^>]*>/);
+    assert.doesNotMatch(html, /color:#[0-9a-fA-F]{3,8}/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('draft posts stay out of the published list', () => {
+  // The public repo cannot hide a draft from git, but it can keep it out of
+  // the site, the index, and the feed. A draft that leaks into any of them is
+  // an unpublished post published by accident.
+  const dir = mkdtempSync(path.join(tmpdir(), 'snails-blog-'));
+  const writePost = (slug, draft) => {
+    mkdirSync(path.join(dir, slug), { recursive: true });
+    writeFileSync(
+      path.join(dir, slug, 'index.md'),
+      `---\ntitle: ${slug}\ndescription: ${slug} summary\ndate: 2026-11-13\ndraft: ${draft}\n---\n\n## Body\n\nText.\n`,
+    );
+  };
+  try {
+    writePost('published', false);
+    writePost('draft', true);
+    const published = loadPosts({ dir, includeDrafts: false });
+    const all = loadPosts({ dir, includeDrafts: true });
+    assert.deepEqual(published.map((post) => post.slug), ['published']);
+    assert.deepEqual(
+      all.map((post) => post.slug).sort(),
+      ['draft', 'published'],
+    );
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('a post with an impossible date is refused', () => {
+  // A date that passes the YYYY-MM-DD shape but does not exist would roll
+  // into the next month and silently build the post under the wrong day.
+  const dir = mkdtempSync(path.join(tmpdir(), 'snails-blog-date-'));
+  try {
+    mkdirSync(path.join(dir, 'bad-date'), { recursive: true });
+    writeFileSync(
+      path.join(dir, 'bad-date', 'index.md'),
+      '---\ntitle: Bad date\ndescription: Bad date summary\ndate: 2026-02-30\n---\n\n## Body\n\nText.\n',
+    );
+    assert.throws(() => loadPosts({ dir }), /not a real date: 2026-02-30/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('the built site has the landing page, the manual, the API reference, and the blog', () => {
   assert.ok(existsSync(path.join(dist, 'index.html')), 'run npm run build first');
   assert.ok(existsSync(path.join(dist, 'api', 'index.html')), 'API reference missing');
+  assert.ok(existsSync(path.join(dist, 'blog', 'index.html')), 'blog index missing');
+  assert.ok(existsSync(path.join(dist, 'blog', 'rss.xml')), 'blog feed missing');
 
   const chapters = loadChapters();
   for (const chapter of chapters) {
@@ -119,6 +226,68 @@ test('the built site has the landing page, the manual, and the API reference', (
       existsSync(path.join(dist, 'manual', chapter.slug, 'index.html')),
       `${chapter.slug} page missing`,
     );
+  }
+
+  const allPosts = loadPosts({ includeDrafts: true });
+  for (const post of allPosts) {
+    const page = path.join(dist, 'blog', post.slug, 'index.html');
+    if (post.draft) {
+      assert.ok(!existsSync(page), `draft ${post.slug} was built`);
+    } else {
+      assert.ok(existsSync(page), `${post.slug} page missing`);
+    }
+  }
+});
+
+test('the feed carries every published post with absolute links', () => {
+  // The feed is the copy a newsletter or reader sees. It has to list every
+  // published post, address each one absolutely, and never carry a draft or a
+  // link that only works on the site.
+  const xml = readFileSync(path.join(dist, 'blog', 'rss.xml'), 'utf8');
+  const posts = loadPosts();
+  assert.match(xml, /<rss version="2.0"/);
+  if (posts.length > 0) assert.match(xml, /<content:encoded>/);
+  assert.equal((xml.match(/<item>/g) ?? []).length, posts.length);
+  for (const post of posts) {
+    const url = `https://snails-rb.org/blog/${post.slug}/`;
+    assert.ok(xml.includes(`<link>${url}</link>`), `${post.slug} link missing from feed`);
+    assert.ok(xml.includes(`<guid isPermaLink="true">${url}</guid>`), `${post.slug} GUID missing`);
+    assert.ok(
+      xml.includes(`<pubDate>${new Date(`${post.date}T00:00:00Z`).toUTCString()}</pubDate>`),
+      `${post.slug} date missing from feed`,
+    );
+    assert.ok(xml.includes(`<title>${post.title}</title>`), `${post.slug} title missing`);
+  }
+  if (posts.length > 0) {
+    assert.ok(
+      xml.includes(
+        `<lastBuildDate>${new Date(`${posts[0].date}T00:00:00Z`).toUTCString()}</lastBuildDate>`,
+      ),
+      'lastBuildDate is not the newest post date',
+    );
+  }
+  const drafts = loadPosts({ includeDrafts: true }).filter((post) => post.draft);
+  for (const draft of drafts) {
+    assert.ok(!xml.includes(`/blog/${draft.slug}/`), `draft ${draft.slug} leaked into the feed`);
+  }
+  assert.ok(!xml.includes('href="/'), 'feed carries a relative link');
+  assert.ok(!xml.includes('src="/'), 'feed carries a relative image');
+  assert.ok(!xml.includes('href="#'), 'feed carries a fragment-only link');
+});
+
+test('the blog pages advertise the feed and carry the post metadata', () => {
+  // A shared post needs its own description and canonical URL; the landing
+  // page's description must not follow the article to social platforms.
+  const index = readFileSync(path.join(dist, 'blog', 'index.html'), 'utf8');
+  assert.ok(index.includes('href="https://snails-rb.org/blog/rss.xml"'), 'feed link missing');
+  assert.ok(index.includes('rel="alternate"'), 'feed discovery link missing');
+
+  for (const post of loadPosts()) {
+    const html = readFileSync(path.join(dist, 'blog', post.slug, 'index.html'), 'utf8');
+    assert.ok(html.includes(`<link rel="canonical" href="https://snails-rb.org/blog/${post.slug}/">`));
+    assert.equal(metaContent(html, 'description'), post.description);
+    assert.ok(html.includes('<meta property="og:type" content="article">'));
+    assert.ok(html.includes(`<time datetime="${post.date}">${formatPostDate(post.date)}</time>`));
   }
 });
 
@@ -265,6 +434,10 @@ test('the built API chrome carries the header shell', () => {
   const css = readFileSync(path.join(dist, 'api', 'css', 'site-chrome.css'), 'utf8');
   assert.match(css, /\.site-header-inner\s*\{[^}]*box-sizing:\s*border-box/s);
   assert.match(css, /\.site-header-inner\s*\{[^}]*max-width:\s*72rem/s);
+
+  const html = readFileSync(path.join(dist, 'api', 'index.html'), 'utf8');
+  assert.ok(html.includes('href="/blog/">Blog</a>'), 'API header has no blog link');
+  assert.ok(html.includes('type="application/rss+xml"'), 'API head has no feed link');
 });
 
 test('the spacing scale is a 4px base', () => {

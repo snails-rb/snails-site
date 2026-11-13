@@ -3,6 +3,7 @@
   <head>
     <%= erb(:headers) %>
     <link rel="stylesheet" href="<%= u = url_for(''); u + (u != '' ? '/' : '') %>css/site-chrome.css" type="text/css">
+    <link rel="alternate" type="application/rss+xml" title="Snails Blog" href="https://snails-rb.org/blog/rss.xml">
   </head>
   <body>
     <div id="main_progress" aria-hidden="true"></div>
@@ -14,6 +15,7 @@
         <a class="brand" href="/">Snails</a>
         <nav class="site-nav">
           <a href="<%= ENV.fetch("MANUAL_ENTRY_URL") %>">Manual</a>
+          <a href="/blog/">Blog</a>
           <a class="active" href="/api/">API</a>
         </nav>
       </div>

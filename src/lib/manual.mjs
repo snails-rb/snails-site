@@ -5,8 +5,7 @@
 
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
-import { marked, Renderer } from 'marked';
-import { highlightCode } from './highlight.mjs';
+import { renderMarkdown as renderSiteMarkdown } from './markdown.mjs';
 
 const DEFAULT_DIR = path.resolve(process.cwd(), 'manual');
 
@@ -48,45 +47,8 @@ export function rewriteLinks(markdown) {
   );
 }
 
-function slugify(text) {
-  return text
-    .toLowerCase()
-    .replace(/<[^>]*>/g, '')
-    .replace(/[^\w]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
-
-// Code blocks are highlighted before parsing rather than inside the renderer:
-// an async renderer returns a Promise, and `marked` concatenates that into the
-// HTML as text. The highlighted HTML is stored on the token, and the renderer
-// below emits it. Fenced blocks nest inside list items, so the walk follows
-// `tokens` and `items` both.
-function highlightCodeTokens(tokens) {
-  for (const token of tokens) {
-    if (token.type === 'code') {
-      token.highlighted = highlightCode(token.text, token.lang);
-    }
-    if (Array.isArray(token.tokens)) highlightCodeTokens(token.tokens);
-    if (Array.isArray(token.items)) highlightCodeTokens(token.items);
-  }
-}
-
-class ManualRenderer extends Renderer {
-  code(token) {
-    // An indented code block has no fence and so no label; it falls through to
-    // the default renderer and comes out as one uncoloured block.
-    return token.highlighted ?? super.code(token);
-  }
-}
-
 // The chapter's own H1 is rendered by the page; headings from H2 down get
 // stable anchors so chapters can be linked to section by section.
 export function renderMarkdown(markdown) {
-  const tokens = marked.lexer(rewriteLinks(markdown));
-  highlightCodeTokens(tokens);
-  const html = marked.parser(tokens, { renderer: new ManualRenderer(), gfm: true });
-  return html.replace(/<h([2-6])>(.*?)<\/h\1>/g, (_, level, text) => {
-    const id = slugify(text);
-    return `<h${level} id="${id}">${text}<a class="anchor" href="#${id}" aria-label="Link to this section">#</a></h${level}>`;
-  });
+  return renderSiteMarkdown(rewriteLinks(markdown));
 }
