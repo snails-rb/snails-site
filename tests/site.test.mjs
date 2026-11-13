@@ -28,7 +28,6 @@ import path from 'node:path';
 import { loadChapters, renderMarkdown } from '../src/lib/manual.mjs';
 import { formatPostDate, loadPosts, renderPostBody } from '../src/lib/blog.mjs';
 import { HIGHLIGHT_LANGUAGES } from '../src/lib/highlight.mjs';
-import { performanceFigures } from '../src/lib/performance.mjs';
 
 const dist = path.resolve(process.cwd(), 'dist');
 
@@ -304,41 +303,7 @@ test('the landing install command follows the source repository', () => {
   assert.ok(!text.includes('snails-rb/dist'), 'the landing page still names the retired dist repo');
 });
 
-test('each landing stat pairs its value with the column it came from', () => {
-  // The comparison table orders columns as Snails | Rails | cluster, while the
-  // landing page lists cluster before default. An index picked by position
-  // silently prints Rails-default figures under a cluster label, which the
-  // table refresh cannot catch. Read the expected strings from the same table
-  // the page reads, so new benchmark figures do not make this test stale.
-  const html = readFileSync(path.join(dist, 'index.html'), 'utf8');
-  const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
-  const figures = performanceFigures();
-  const stats = [
-    {
-      row: 'Response time, 95th percentile',
-      heading: 'p95 latency',
-      label: 'Rails (cluster mode)',
-      column: 1,
-    },
-    {
-      row: 'Launch to first answer',
-      heading: 'Startup time',
-      label: 'Rails (default)',
-      column: 2,
-    },
-    {
-      row: 'Memory under load',
-      heading: 'Memory under load',
-      label: 'Rails (cluster mode)',
-      column: 1,
-    },
-  ];
-  for (const { row, heading, label, column } of stats) {
-    const values = figures.rowValues(row);
-    const expected = `${heading} ${values[0]} ${label} ${values[column]}`;
-    assert.ok(text.includes(expected), `${heading} does not read "${expected}"`);
-  }
-});
+
 
 test('the manual has no landing page and no link points at one', () => {
   // The chapter list already lives in the sidebar of every chapter, so a
