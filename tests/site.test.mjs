@@ -16,6 +16,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { loadChapters, renderMarkdown } from '../src/lib/manual.mjs';
 import { HIGHLIGHT_LANGUAGES } from '../src/lib/highlight.mjs';
+import { performanceFigures } from '../src/lib/performance.mjs';
 
 const dist = path.resolve(process.cwd(), 'dist');
 
@@ -118,6 +119,55 @@ test('the built site has the landing page, the manual, and the API reference', (
       existsSync(path.join(dist, 'manual', chapter.slug, 'index.html')),
       `${chapter.slug} page missing`,
     );
+  }
+});
+
+test('the landing install command follows the source repository', () => {
+  // The dist repository was retired when releases moved into snails; a copy
+  // button that hands over the old URL installs nothing. The URL is split by
+  // <wbr/> for phone wrapping, so strip the tags before matching.
+  const html = readFileSync(path.join(dist, 'index.html'), 'utf8');
+  const text = html.replace(/<[^>]+>/g, '');
+  assert.ok(
+    text.includes('raw.githubusercontent.com/snails-rb/snails/main/install.sh'),
+    'the landing page does not install from snails-rb/snails',
+  );
+  assert.ok(!text.includes('snails-rb/dist'), 'the landing page still names the retired dist repo');
+});
+
+test('each landing stat pairs its value with the column it came from', () => {
+  // The comparison table orders columns as Snails | Rails | cluster, while the
+  // landing page lists cluster before default. An index picked by position
+  // silently prints Rails-default figures under a cluster label, which the
+  // table refresh cannot catch. Read the expected strings from the same table
+  // the page reads, so new benchmark figures do not make this test stale.
+  const html = readFileSync(path.join(dist, 'index.html'), 'utf8');
+  const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+  const figures = performanceFigures();
+  const stats = [
+    {
+      row: 'Response time, 95th percentile',
+      heading: 'p95 latency',
+      label: 'Rails (cluster mode)',
+      column: 1,
+    },
+    {
+      row: 'Launch to first answer',
+      heading: 'Startup time',
+      label: 'Rails (default)',
+      column: 2,
+    },
+    {
+      row: 'Memory under load',
+      heading: 'Memory under load',
+      label: 'Rails (cluster mode)',
+      column: 1,
+    },
+  ];
+  for (const { row, heading, label, column } of stats) {
+    const values = figures.rowValues(row);
+    const expected = `${heading} ${values[0]} ${label} ${values[column]}`;
+    assert.ok(text.includes(expected), `${heading} does not read "${expected}"`);
   }
 });
 

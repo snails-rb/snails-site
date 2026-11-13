@@ -6,11 +6,11 @@ import { performanceFigures } from '../lib/performance.mjs';
 
 const routeCode = [
   '# inside Snails::RouteTable.table',
-  'resources("/posts", PostsController, :json)',
+  '*resources("/posts", Api::PostsController, :json)',
 ].join('\n');
 
 const controllerCode = [
-  'class PostsController < ActionController::API',
+  'class Api::PostsController < Api::ApplicationController',
   '  def index',
   '    render(json: posts)',
   '  end',
@@ -31,7 +31,7 @@ const controllerCode = [
 // phone without changing what the copy button hands over: <wbr> carries no
 // text, so textContent is still the one-line command.
 const installCommandHtml =
-  'curl -fsSL <wbr/>https://<wbr/>raw.githubusercontent.com/<wbr/>snails-rb/<wbr/>dist/<wbr/>main/<wbr/>install.sh <wbr/>| bash';
+  'curl -fsSL <wbr/>https://<wbr/>raw.githubusercontent.com/<wbr/>snails-rb/<wbr/>snails/<wbr/>main/<wbr/>install.sh <wbr/>| bash';
 
 const figures = performanceFigures();
 const fastest = Math.max(...figures.series.map((target) => target.requests));
@@ -43,7 +43,7 @@ const boot = figures.rowValues('Launch to first answer');
   <article class="front">
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-copy">
-        <p class="eyebrow"><span class="status">Alpha</span> Ruby · native binary</p>
+        <p class="eyebrow"><span class="status">1.0 RC</span> Ruby · native binary</p>
         <h1 id="hero-title">Ruby web apps.<br />One native binary.</h1>
         <p class="lede">
           Snails is a Rails-like framework that compiles API-only Ruby apps into one native
@@ -71,10 +71,11 @@ const boot = figures.rowValues('Launch to first answer');
 
         <p class="hero-note">
           After that, <code>snails new demo</code> creates a project. The installer needs
-          <code>curl</code> and <code>tar</code>; the first build also needs <code>git</code>,
-          <code>make</code>, and a C compiler with the usual development headers. <a href="/manual/getting-started/">Full install guide →</a>
+          <code>curl</code> and <code>tar</code>; the first <code>snails new</code> also needs
+          <code>git</code>, <code>make</code>, and a C compiler with the usual development
+          headers. <a href="/manual/getting-started/#requirements">Full install guide →</a>
         </p>
-        <p class="hero-status">Alpha. The public API can change between 0.x releases.</p>
+        <p class="hero-status">1.0 release candidate. The public API may still change before 1.0.</p>
       </div>
 
       <div class="hero-demo" role="group" aria-label="A Snails route, controller, and test run">
@@ -84,7 +85,7 @@ const boot = figures.rowValues('Launch to first answer');
         </div>
         <div class="demo-code" set:html={highlightCode(routeCode, 'ruby')} />
         <div class="demo-head">
-          <span class="demo-file">app/controllers/posts_controller.rb</span>
+          <span class="demo-file">app/controllers/api/posts_controller.rb</span>
         </div>
         <div class="demo-code" set:html={highlightCode(controllerCode, 'ruby')} />
         <div class="demo-term" role="group" aria-label="Test output">
@@ -148,11 +149,11 @@ const boot = figures.rowValues('Launch to first answer');
       <h2 class="perf-title" id="performance">Performance</h2>
 
       <p class="perf-lede">
-        Snails delivers <strong>{figures.clusterRatio}×</strong> the throughput of Rails in cluster
-        mode and <strong>{figures.defaultsRatio}×</strong> that of a default Rails app — the same
-        <code>GET /up</code> on the same 8-core machine. It compiles to native code without Ruby's
-        GVL, so one process uses every core; Rails needs a worker process per core to use the same
-        hardware.
+        Snails delivers about <strong>{figures.clusterRatio}×</strong> the throughput of Rails in
+        cluster mode and <strong>{figures.defaultsRatio}×</strong> that of a default Rails app — the
+        same <code>GET /up</code> on the same 8-core machine. It compiles to native code without
+        Ruby's GVL, so one process uses every core; Rails needs a worker process per core to use the
+        same hardware.
       </p>
 
       <figure class="perf-chart">
@@ -182,21 +183,21 @@ const boot = figures.rowValues('Launch to first answer');
           <dt>p95 latency</dt>
           <dd>
             <span class="perf-number">{latency[0]}</span>
-            <span class="perf-note">Rails (cluster mode) {latency[2]}</span>
+            <span class="perf-note">Rails (cluster mode) {latency[1]}</span>
           </dd>
         </div>
         <div class="perf-stat">
           <dt>Startup time</dt>
           <dd>
             <span class="perf-number">{boot[0]}</span>
-            <span class="perf-note">Rails (default) {boot[1]}</span>
+            <span class="perf-note">Rails (default) {boot[2]}</span>
           </dd>
         </div>
         <div class="perf-stat">
           <dt>Memory under load</dt>
           <dd>
             <span class="perf-number">{memory[0]}</span>
-            <span class="perf-note">Rails (cluster mode) {memory[2]}</span>
+            <span class="perf-note">Rails (cluster mode) {memory[1]}</span>
           </dd>
         </div>
       </dl>
