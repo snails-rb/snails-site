@@ -41,6 +41,17 @@ function htmlFiles(dir) {
   });
 }
 
+function metaContent(html, name) {
+  const match = html.match(new RegExp(`<meta name="${name}" content="([^"]*)"`));
+  if (!match) return null;
+  return match[1]
+    .replaceAll('&quot;', '"')
+    .replaceAll('&#39;', "'")
+    .replaceAll('&lt;', '<')
+    .replaceAll('&gt;', '>')
+    .replaceAll('&amp;', '&');
+}
+
 test('every chapter in manual/ parses with a number, slug, and title', () => {
   const chapters = loadChapters();
   assert.ok(chapters.length >= 2, 'expected at least the welcome and getting-started chapters');
@@ -269,7 +280,7 @@ test('the blog pages advertise the feed and carry the post metadata', () => {
   for (const post of loadPosts()) {
     const html = readFileSync(path.join(dist, 'blog', post.slug, 'index.html'), 'utf8');
     assert.ok(html.includes(`<link rel="canonical" href="https://snails-rb.org/blog/${post.slug}/">`));
-    assert.ok(html.includes(`<meta name="description" content="${post.description}">`));
+    assert.equal(metaContent(html, 'description'), post.description);
     assert.ok(html.includes('<meta property="og:type" content="article">'));
     assert.ok(html.includes(`<time datetime="${post.date}">${formatPostDate(post.date)}</time>`));
   }
@@ -421,6 +432,7 @@ test('the built API chrome carries the header shell', () => {
 
   const html = readFileSync(path.join(dist, 'api', 'index.html'), 'utf8');
   assert.ok(html.includes('href="/blog/">Blog</a>'), 'API header has no blog link');
+  assert.ok(html.includes('type="application/rss+xml"'), 'API head has no feed link');
 });
 
 test('the spacing scale is a 4px base', () => {
