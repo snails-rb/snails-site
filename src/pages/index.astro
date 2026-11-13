@@ -2,7 +2,6 @@
 import Base from '../layouts/Base.astro';
 import { firstChapterUrl } from '../lib/manual.mjs';
 import { highlightCode } from '../lib/highlight.mjs';
-import { performanceFigures } from '../lib/performance.mjs';
 
 const routeCode = [
   '# inside Snails::RouteTable.table',
@@ -33,11 +32,22 @@ const controllerCode = [
 const installCommandHtml =
   'curl -fsSL <wbr/>https://<wbr/>raw.githubusercontent.com/<wbr/>snails-rb/<wbr/>snails/<wbr/>main/<wbr/>install.sh <wbr/>| bash';
 
-const figures = performanceFigures();
+// The landing figures are maintained here by hand. Update them with the
+// benchmark results when the numbers change; the manual's "How it compares"
+// section and snails-benchmark carry the full record and method.
+const figures = {
+  series: [
+    { label: 'Snails', requests: 50865 },
+    { label: 'Rails (cluster mode)', requests: 16209 },
+    { label: 'Rails (default)', requests: 4262 },
+  ],
+  clusterRatio: 3,
+  defaultsRatio: '11.9',
+};
 const fastest = Math.max(...figures.series.map((target) => target.requests));
-const latency = figures.rowValues('Response time, 95th percentile');
-const memory = figures.rowValues('Memory under load');
-const boot = figures.rowValues('Launch to first answer');
+const latency = ['1.3 ms', '4.7 ms'];
+const memory = ['30 MiB', '701 MiB'];
+const boot = ['9 ms', '1.0 s', '1.0 s'];
 ---
 <Base wide>
   <article class="front">
