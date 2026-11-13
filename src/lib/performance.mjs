@@ -1,12 +1,13 @@
 // The landing page's benchmark figures are read from the manual's comparison
-// table (manual/01-welcome-to-snails.md), which is refreshed from the snails
+// table (manual/29-performance.md), which is refreshed from the snails
 // repository on a schedule. A second hard-coded copy would keep serving the old
 // values after such a refresh; a table this loader cannot read fails the build,
 // so drift breaks the build instead of the page.
 
 import { loadChapters } from './manual.mjs';
 
-const TABLE_CHAPTER = 'welcome-to-snails';
+const TABLE_CHAPTER = 'performance';
+const TABLE_FILE = '29-performance.md';
 
 // Column in the manual → label the landing page shows. "Cluster mode" is
 // Puma's own name for one worker process per core, so it stays; the other
@@ -37,14 +38,14 @@ function comparisonTable(markdown) {
   });
   if (headerIndex === -1) {
     const expected = TARGETS.map((target) => `"${target.column}"`).join(', ');
-    throw new Error(`manual/${TABLE_CHAPTER}.md: no comparison table with columns ${expected}`);
+    throw new Error(`manual/${TABLE_FILE}: no comparison table with columns ${expected}`);
   }
 
   const header = cells(lines[headerIndex]);
   const positions = TARGETS.map((target) => {
     const index = header.indexOf(target.column);
     if (index === -1) {
-      throw new Error(`manual/${TABLE_CHAPTER}.md: comparison table has no "${target.column}" column`);
+      throw new Error(`manual/${TABLE_FILE}: comparison table has no "${target.column}" column`);
     }
     return index;
   });
@@ -58,7 +59,7 @@ function comparisonTable(markdown) {
       const value = row[index];
       if (!value) {
         throw new Error(
-          `manual/${TABLE_CHAPTER}.md: "${row[0]}" has no value for ${TARGETS[position].column}`,
+          `manual/${TABLE_FILE}: "${row[0]}" has no value for ${TARGETS[position].column}`,
         );
       }
       return value;
@@ -67,7 +68,7 @@ function comparisonTable(markdown) {
   }
 
   if (rows.size === 0) {
-    throw new Error(`manual/${TABLE_CHAPTER}.md: the comparison table has no rows`);
+    throw new Error(`manual/${TABLE_FILE}: the comparison table has no rows`);
   }
 
   return rows;
@@ -79,7 +80,7 @@ function comparisonTable(markdown) {
 function requestCount(value) {
   const parsed = Number(value.replace(/,/g, ''));
   if (!Number.isInteger(parsed)) {
-    throw new Error(`manual/${TABLE_CHAPTER}.md: "${value}" is not a request count`);
+    throw new Error(`manual/${TABLE_FILE}: "${value}" is not a request count`);
   }
   return parsed;
 }
@@ -87,13 +88,13 @@ function requestCount(value) {
 export function performanceFigures(chapters = loadChapters()) {
   const chapter = chapters.find((candidate) => candidate.slug === TABLE_CHAPTER);
   if (!chapter) {
-    throw new Error(`manual/${TABLE_CHAPTER}.md is missing — the landing page reads its figures from it`);
+    throw new Error(`manual/${TABLE_FILE} is missing — the landing page reads its figures from it`);
   }
 
   const table = comparisonTable(chapter.body);
   const throughput = table.get(THROUGHPUT_ROW);
   if (!throughput) {
-    throw new Error(`manual/${TABLE_CHAPTER}.md: comparison table has no "${THROUGHPUT_ROW}" row`);
+    throw new Error(`manual/${TABLE_FILE}: comparison table has no "${THROUGHPUT_ROW}" row`);
   }
 
   const counts = throughput.map(requestCount);
@@ -110,7 +111,7 @@ export function performanceFigures(chapters = loadChapters()) {
     rowValues(rowLabel) {
       const values = table.get(rowLabel);
       if (!values) {
-        throw new Error(`manual/${TABLE_CHAPTER}.md: comparison table has no "${rowLabel}" row`);
+        throw new Error(`manual/${TABLE_FILE}: comparison table has no "${rowLabel}" row`);
       }
       return values;
     },

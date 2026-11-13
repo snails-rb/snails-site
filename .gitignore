@@ -1,6 +1,7 @@
 # build output
 dist/
 public/api/
+public/blog/
 
 # vendored gems and npm packages
 vendor/bundle/

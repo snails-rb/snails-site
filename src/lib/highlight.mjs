@@ -1,10 +1,10 @@
-// Syntax highlighting for the manual's code blocks.
+// Syntax highlighting for the manual's and blog's code blocks.
 //
-// The manual's markdown is rendered by `marked` in `manual.mjs`, not by
-// Astro's own markdown pipeline: the chapters live outside `src/`, and the
-// loader rewrites chapter links before rendering. Astro's built-in
-// highlighting therefore never reaches these blocks, so the highlighter is
-// wired in explicitly here.
+// Both content trees are rendered by `marked` in `src/lib/markdown.mjs`, not
+// by Astro's own markdown pipeline: the chapters and posts live outside
+// `src/`, and the manual loader rewrites chapter links before rendering.
+// Astro's built-in highlighting therefore never reaches these blocks, so the
+// highlighter is wired in explicitly here.
 //
 // Highlighting runs at build time: the output is plain `<span style>` markup
 // naming `--syntax-*` roles, and the browser ships no highlighter. The palette

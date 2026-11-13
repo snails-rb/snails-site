@@ -3,24 +3,48 @@ import '@fontsource-variable/jetbrains-mono';
 import '../styles/site.css';
 import '../styles/site-header.css';
 import { firstChapterUrl } from '../lib/manual.mjs';
+import { absoluteUrl } from '../lib/site.mjs';
 
 // The header is on every page; the chapter sidebar belongs to the manual only.
 // A page that wants the sidebar passes the chapter list it should show. The
 // landing page asks for the wider shell so the hero can put code beside the
-// claim; the manual keeps its reading column.
-const { chapters = [], active = null, title = null, section = null, wide = false } = Astro.props;
+// claim; the manual and blog keep their reading column.
+const {
+  chapters = [],
+  active = null,
+  title = null,
+  description = null,
+  section = null,
+  wide = false,
+  article = false,
+  canonical = Astro.url.pathname,
+} = Astro.props;
 const withSidebar = chapters.length > 0;
+const pageTitle = title ? `${title} — Snails` : 'Snails — Ruby web apps, one native binary';
+const pageDescription =
+  description ??
+  'Snails is a Rails-like framework for API-only Ruby apps, compiled into one native binary with no Ruby dependency.';
+const canonicalUrl = absoluteUrl(canonical);
 ---
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title ? `${title} — Snails` : 'Snails — Ruby web apps, one native binary'}</title>
-    <meta
-      name="description"
-      content="Snails is a Rails-like framework for API-only Ruby apps, compiled into one native binary with no Ruby dependency."
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDescription} />
+    <link rel="canonical" href={canonicalUrl} />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title="Snails Blog"
+      href={absoluteUrl('/blog/rss.xml')}
     />
+    <meta property="og:site_name" content="Snails" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:type" content={article ? 'article' : 'website'} />
   </head>
   <body>
     <header class="site-header">
@@ -28,6 +52,7 @@ const withSidebar = chapters.length > 0;
         <a class="brand" href="/">Snails</a>
         <nav class="site-nav">
           <a class={section === 'manual' ? 'active' : ''} href={firstChapterUrl()}>Manual</a>
+          <a class={section === 'blog' ? 'active' : ''} href="/blog/">Blog</a>
           <a class={section === 'api' ? 'active' : ''} href="/api/">API</a>
         </nav>
       </div>

@@ -1,0 +1,50 @@
+---
+import Base from '../../layouts/Base.astro';
+import { firstChapterUrl } from '../../lib/manual.mjs';
+import { formatPostDate, loadPosts, renderPostBody } from '../../lib/blog.mjs';
+
+export function getStaticPaths() {
+  return loadPosts().map((post) => ({ params: { slug: post.slug }, props: { post } }));
+}
+
+const post = Astro.props.post;
+const body = renderPostBody(post);
+---
+<Base
+  title={post.title}
+  description={post.description}
+  section="blog"
+  article
+  canonical={`/blog/${post.slug}/`}
+>
+  <article class="post">
+    <header class="post-header">
+      <p class="post-meta">
+        <time datetime={post.date}>{formatPostDate(post.date)}</time>
+        <span aria-hidden="true"> · </span>
+        {post.author}
+        {
+          post.updated && (
+            <>
+              <span aria-hidden="true"> · </span>
+              Updated <time datetime={post.updated}>{formatPostDate(post.updated)}</time>
+            </>
+          )
+        }
+      </p>
+      <h1>{post.title}</h1>
+      <p class="post-description">{post.description}</p>
+    </header>
+
+    <div class="post-body" set:html={body} />
+
+    <footer class="post-footer">
+      <p>
+        This post records the reasoning at the time it was written. The <a
+          href={firstChapterUrl()}>manual</a
+        > is the current reference for how Snails works.
+      </p>
+      <a href="/blog/">← All posts</a>
+    </footer>
+  </article>
+</Base>

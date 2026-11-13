@@ -1,0 +1,39 @@
+---
+import Base from '../../layouts/Base.astro';
+import { formatPostDate, loadPosts } from '../../lib/blog.mjs';
+
+const posts = loadPosts();
+---
+<Base
+  title="Blog"
+  description="Dated notes on the design, benchmarks, and releases behind Snails."
+  section="blog"
+>
+  <article class="blog-index">
+    <h1>Blog</h1>
+    <p class="blog-lede">
+      Dated notes on the design, benchmarks, and releases behind Snails. The <a
+        href="/manual/welcome-to-snails/">manual</a
+      > is the current reference for how Snails works; a post records the reasoning at the
+      time it was written.
+    </p>
+
+    {
+      posts.length === 0 ? (
+        <p class="blog-empty">No posts yet.</p>
+      ) : (
+        <ul class="post-list">
+          {posts.map((post) => (
+            <li>
+              <time datetime={post.date}>{formatPostDate(post.date)}</time>
+              <a class="post-list-title" href={`/blog/${post.slug}/`}>
+                {post.title}
+              </a>
+              <span class="post-list-description">{post.description}</span>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </article>
+</Base>

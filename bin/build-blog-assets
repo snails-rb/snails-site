@@ -1,0 +1,34 @@
+#!/bin/bash
+# Copy files that sit next to a blog post into public/blog/<slug>/.
+#
+# Post images and other attachments are authored with the post, not in public/,
+# so the post folder is the single place to add or remove them. The copy is
+# generated: public/blog/ is ignored and rebuilt before each dev server or build.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SRC="$ROOT/blog"
+DEST="$ROOT/public/blog"
+
+[[ -d $SRC ]] || { echo "[build-blog-assets] no blog/ directory" >&2; exit 1; }
+
+rm -rf "$DEST"
+mkdir -p "$DEST"
+
+shopt -s nullglob
+count=0
+for dir in "$SRC"/*/; do
+  [[ -f "$dir/index.md" ]] || continue
+  slug="${dir%/}"
+  slug="${slug##*/}"
+  for file in "$dir"*; do
+    [[ -f $file ]] || continue
+    [[ ${file##*/} == "index.md" ]] && continue
+    [[ ${file##*/} == .* ]] && continue
+    mkdir -p "$DEST/$slug"
+    cp "$file" "$DEST/$slug/"
+    count=$((count + 1))
+  done
+done
+
+echo "[build-blog-assets] copied $count files into public/blog/"
