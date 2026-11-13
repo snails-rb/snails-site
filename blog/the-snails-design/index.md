@@ -1,5 +1,5 @@
 ---
-title: Why Snails
+title: The Snails Design
 description: The design choices behind Snails, and the purpose each one serves.
 date: 2026-11-13
 author: Snails
