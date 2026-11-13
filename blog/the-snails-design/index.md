@@ -54,13 +54,13 @@ ALTER TABLE posts ADD COLUMN slug TEXT;
 
 The migration is SQL because the agent writes the statement the reviewer reads. There is no Ruby DSL to translate, and a human does not need to hand-write the file. The schema dump comes from the same files, so the migration and the generated column readers share one source.
 
-## One binary, one runtime
+## Performance is a key design choice
 
-The app builds into one executable that includes the framework and the HTTP server. App code stays Ruby; the compiler turns it into the binary. The CLI is bash, so neither the command line nor the server needs a Ruby installation. The machine that runs the binary does not need Ruby, Bundler, or a separate application server. One process serves requests on the available cores without a worker process per core, and memory does not multiply with a worker count.
+Rails is often criticized for its performance. Ruby's global VM lock (GVL) limits one process to one thread of application code, so Rails runs worker processes to use more cores; each worker carries its own VM, connection pool, heap, and resident set.
 
-Snails 1.0 runs one server process. `WORKERS` and `-w` are accepted but do not add processes; run more copies or containers when one process is not enough.
+Snails makes a major architectural choice: no Ruby runtime, no gem compatibility, and one native binary that contains the app, the framework, and the HTTP server. App code stays Ruby; the compiler turns it into the binary. That removes the GVL, the Bundler load path, and the per-worker memory footprint. One process runs request handlers on the cores the OS gives it, and the binary boots in single-digit milliseconds. The [Performance](/manual/performance/) chapter measures about 3× the throughput of Rails in cluster mode, 10× or more peak-memory savings under load, and about 12× the throughput of a default Rails app.
 
-The runtime is self-contained. There is no Ruby runtime and no Bundler load path, so the framework provides the helpers an API app needs and the app provides the rest. When an app needs a small behavior, the agent implements it in the app, in the same language and test suite. The set of dependencies stays small, and the deployment is one artifact. The same build also means no gem compatibility: the app and framework compile together, so the app owns the behavior a gem would provide.
+The no-gem choice is what coding agents make practical. A gem assumes a Ruby runtime and a Bundler load path; the binary has none. The framework provides the helpers an API app needs, and the app provides the rest; the agent implements the small missing behavior in the app, in the same language and test suite. That is why the performance choice is practical now.
 
 ## Tests run against the real server
 
@@ -70,7 +70,7 @@ The harness makes integration the default. Stubs and mocks are easier to write, 
 
 ## The workflow these choices serve
 
-The choices reinforce each other. A small model API keeps the SQL visible. A single binary removes the Ruby runtime between the app and the request. A real-server harness exercises the HTTP path. The result is a workflow: the agent writes inside a small, standard API; the reviewer reads the route, the SQL, the migration, and the test evidence; the binary and the harness make that evidence real. The framework's job is to keep that workflow small and honest.
+The choices reinforce each other. A small model API keeps the SQL visible. A native binary removes the Ruby runtime between the app and the request. A real-server harness exercises the HTTP path. The result is a workflow: the agent writes inside a small, standard API; the reviewer reads the route, the SQL, the migration, and the test evidence; the binary and the harness make that evidence real. The framework's job is to keep that workflow small and honest.
 
 Snails is for API-only apps whose API is the product, whose deployment is one binary, and whose team wants the SQL and the request path visible. The design assumes coding agents write the implementation and humans review and decide; that is the workflow it optimizes for. If you need server-rendered pages, the full Ruby gem ecosystem, or Active Record's object model, Rails is the better fit.
 
@@ -81,6 +81,7 @@ Snails is for API-only apps whose API is the product, whose deployment is one bi
 - [Database and Models](/manual/database-and-models/)
 - [Migrations](/manual/migrations/)
 - [Testing](/manual/testing/)
+- [Concurrency](/manual/concurrency/)
 - [Performance](/manual/performance/)
 - [Snails benchmark](https://github.com/snails-rb/snails-benchmark)
 - [Spinel](https://github.com/matz/spinel)
