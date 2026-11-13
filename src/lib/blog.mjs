@@ -184,8 +184,12 @@ function rfc822(date) {
   return new Date(`${date}T00:00:00Z`).toUTCString();
 }
 
-function absoluteHtml(html) {
-  return html.replace(/(href|src)="\/(?![\/])/g, (_, attribute) => `${attribute}="${SITE_URL}/`);
+function absoluteHtml(html, pageUrl) {
+  return html
+    .replace(/(href|src)="\/(?![\/])/g, (_, attribute) => `${attribute}="${SITE_URL}/`)
+    .replace(/(href|src)="#([^"]+)"/g, (_, attribute, fragment) => {
+      return `${attribute}="${pageUrl}#${fragment}"`;
+    });
 }
 
 /**
@@ -204,7 +208,7 @@ export function renderRss(posts) {
 
   const items = posts.map((post) => {
     const url = `${SITE_URL}/blog/${post.slug}/`;
-    const html = absoluteHtml(renderPostBody(post));
+    const html = absoluteHtml(renderPostBody(post), url);
     return `<item>
   <title>${escapeXml(post.title)}</title>
   <link>${url}</link>

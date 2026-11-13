@@ -256,6 +256,7 @@ test('the feed carries every published post with absolute links', () => {
   }
   assert.ok(!xml.includes('href="/'), 'feed carries a relative link');
   assert.ok(!xml.includes('src="/'), 'feed carries a relative image');
+  assert.ok(!xml.includes('href="#'), 'feed carries a fragment-only link');
 });
 
 test('the blog pages advertise the feed and carry the post metadata', () => {
