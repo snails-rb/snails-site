@@ -36,7 +36,7 @@ Comment.fetch_many({ post_id: post.id }, order: :asc)
 Post.find_by_sql("SELECT " + Post.projection + " FROM posts WHERE author_id = ?", [ author_id ])
 ```
 
-The point is not that a coding agent cannot write SQL. It can. The point is that a smaller surface cuts repeated boilerplate and gives the common path a shape that is easier to review. A query that needs a join is written as a query, not assembled through an object graph the reviewer has to reconstruct in their head. Empty conditions are refused instead of quietly matching every row, and writes raise when the database rejects them.
+Coding agents can write SQL. The point is that a smaller surface cuts repeated boilerplate and gives the common path a shape that is easier to review. A query that needs a join is written as a query, not assembled through an object graph the reviewer has to reconstruct in their head. Empty conditions are refused instead of quietly matching every row, and writes raise when the database rejects them.
 
 **What it costs.** There is no lazy loading, no association graph, and no callback chain. You write joins and cascades yourself, and a complex domain will need more explicit code than it would under Active Record. The model layer is not an ORM; if you want one object model over the database, Rails is the better fit. See [Database and Models](/manual/database-and-models/), [Querying](/manual/querying/), and [Forms and Validation](/manual/forms/).
 
