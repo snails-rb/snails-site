@@ -33,8 +33,11 @@ const installCommandHtml =
   'curl -fsSL <wbr/>https://<wbr/>raw.githubusercontent.com/<wbr/>snails-rb/<wbr/>snails/<wbr/>main/<wbr/>install.sh <wbr/>| bash';
 
 // The landing figures are maintained here by hand. Update them with the
-// benchmark results when the numbers change; the manual's "How it compares"
-// section and snails-benchmark carry the full record and method.
+// benchmark results when the numbers change; the manual's Performance chapter
+// and snails-benchmark carry the full record and method.
+// The landing figures are maintained here by hand. Update them with the
+// benchmark results when the numbers change; the manual's Performance chapter
+// and snails-benchmark carry the full record and method.
 const figures = {
   series: [
     { label: 'Snails', requests: 50865 },
@@ -107,7 +110,7 @@ const startup = { snails: '9 ms', railsDefault: '1.0 s' };
     </section>
 
     <section class="features" aria-labelledby="features-title">
-      <p class="eyebrow">Why Snails</p>
+      <p class="eyebrow">Design</p>
       <h2 id="features-title">Rails conventions, one binary.</h2>
       <p class="section-lede">
         Snails keeps the Rails conventions an API needs. The view layer is gone, and the server
@@ -131,13 +134,13 @@ const startup = { snails: '9 ms', railsDefault: '1.0 s' };
           </span>
           <span class="feature-go">Deploying →</span>
         </a>
-        <a class="feature" href="/manual/welcome-to-snails/#how-it-compares">
+        <a class="feature" href="/manual/performance/">
           <h3 class="feature-title">Every core, one process</h3>
           <span class="feature-body">
             Native code has no GVL, so a single process serves requests on all available cores.
             Memory does not multiply with worker count.
           </span>
-          <span class="feature-go">How it compares →</span>
+          <span class="feature-go">Performance →</span>
         </a>
         <a class="feature" href="/manual/testing/">
           <h3 class="feature-title">Tests against a real server</h3>
@@ -216,7 +219,7 @@ const startup = { snails: '9 ms', railsDefault: '1.0 s' };
         Medians of three 15-second runs with request logging off; startup time from five runs. The
         route serves JSON and touches no database or view, so this measures the request path. Ratios
         transfer between machines; absolute figures belong to the machine that ran them. See{' '}
-        <a href="/manual/welcome-to-snails/#how-it-compares">How it compares</a> in the manual
+        <a href="/manual/performance/">Performance</a> in the manual
         for the full table, and <a href="https://github.com/snails-rb/snails-benchmark">snails-benchmark</a> for
         the method and raw results.
       </p>
