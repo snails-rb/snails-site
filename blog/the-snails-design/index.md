@@ -5,7 +5,7 @@ date: 2026-11-13
 author: Snails
 ---
 
-Snails is a Rails-like framework for API-only Ruby apps. It keeps the conventions that make an API app predictable — routes, controllers, form objects, mailers, jobs, and a conventional folder layout — and gives it a small surface and a different runtime. This is not a list of features missing from Rails. It is a set of design choices, each made for a reason.
+Snails is a Rails-like framework for API-only Ruby apps. It keeps the conventions that make an API app predictable — routes, controllers, form objects, mailers, jobs, and a conventional folder layout — and gives the framework a small surface and a different runtime. This is not a list of features missing from Rails. It is a set of design choices, each made for a reason.
 
 The choices share one goal: an API-only app that compiles to one native binary, keeps the SQL and the request path visible, and makes the integration boundary the default test boundary. The design is opinionated, but it is not arbitrary. Every choice below follows from that goal.
 
@@ -48,7 +48,7 @@ A schema change is a numbered SQL file under `db/migrate/`. `snails migrate appl
 ALTER TABLE posts ADD COLUMN slug TEXT;
 ```
 
-The schema change is the SQL. A reviewer reads the statement without translating a Ruby DSL, and an agent writes the file that will be applied. The schema dump comes from the same files, so the migration and the generated column readers share one source.
+The change itself is SQL. A reviewer reads the statement without translating a Ruby DSL, and an agent writes the file that will be applied. The schema dump comes from the same files, so the migration and the generated column readers share one source.
 
 ## One binary, one runtime
 
@@ -62,13 +62,13 @@ The runtime is self-contained. There is no Ruby runtime and no Bundler load path
 
 `bin/test` builds the app, boots it on a spare port, and sends real HTTP requests through the harness. One fresh server serves the suite; each case resets the tables it declares. Nothing mocks the framework out of the way.
 
-The harness makes integration the default. Stubs and mocks are easier to write, so an agent left to choose will often produce a suite that describes the system instead of exercising it. The real server makes the suite cross the same HTTP boundary the app uses.
+The harness makes integration the default. Stubs and mocks are easier to write, so an agent left to choose will often produce a suite that describes the system instead of exercising it. The real server makes the suite send requests through the same HTTP server the app uses.
 
 ## Why these choices fit together
 
-The choices reinforce each other. A small model surface keeps the SQL visible. A single binary removes the runtime that would sit between the app and the request. A real-server harness exercises the HTTP boundary. The result is a framework with a small surface, one deployment artifact, and a test suite that exercises the app rather than a description of it.
+The choices reinforce each other. A small model surface keeps the SQL visible. A single binary removes the runtime that would sit between the app and the request. A real-server harness exercises the HTTP path. The result is a framework with a small surface, one deployment artifact, and a test suite that exercises the app rather than a description of it.
 
-Snails is for API-only apps whose JSON boundary is the product, whose deployment is one binary, and whose team wants the SQL and the request path visible. That is the design. The [manual](/manual/welcome-to-snails/) covers the details.
+Snails is for API-only apps whose API is the product, whose deployment is one binary, and whose team wants the SQL and the request path visible. That is the design. The [manual](/manual/welcome-to-snails/) covers the details.
 
 ## Further reading
 

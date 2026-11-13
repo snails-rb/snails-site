@@ -59,7 +59,7 @@ draft: false          # optional; a draft is not built, indexed, or fed
 
 Post images and attachments live in the same folder. `bin/build-blog-assets` copies them into `public/blog/<slug>/` before the dev server or build; that directory is generated and ignored. Write links as site paths (`/manual/migrations/`, `/blog/other-post/`), not relative chapter filenames; the site-wide link check fails on a target that does not exist.
 
-Publishing is a normal PR: add the folder, run `npm run build`, `npm test`, and open the PR. `draft: true` keeps a post out of the built site, index, and feed, but the public repository still carries the file in git; writing that must stay private belongs in the planning repository, not here.
+Publishing is a normal PR: add the folder, run `npm run build`, `npm test`, and open the PR. `draft: true` keeps a post out of the built site, index, and feed, but the file still lives in the public git repository. Anything that must stay private belongs in the planning repository, not here.
 
 The post URL is the canonical address. When the same article appears on another channel, link to it there or set its canonical URL to `https://snails-rb.org/blog/<slug>/`; do not keep a second full copy as the source.
 
@@ -67,8 +67,8 @@ The post URL is the canonical address. When the same article appears on another 
 
 The intro has three forms, and they answer different questions:
 
-- **Landing (`/`)** is the evaluation copy. One paragraph, outcome and comparison, not a stack inventory. It carries the benchmark and the deployment trade-off; the feature cards and manual links carry the detail.
-- **Manual `01-welcome-to-snails.md`** is the canonical definition. It lists the Rails shape and the limits, but no benchmark numbers — the manual's "How it compares" section owns those. The Snails README uses the same opening paragraph.
+- **Landing (`/`)** is the evaluation copy. One paragraph, outcome and comparison, not a stack inventory. It carries the benchmark and the deployment model; the feature cards and manual links carry the detail.
+- **Manual `01-welcome-to-snails.md`** is the canonical definition. It gives the definition and the boundary, but no benchmark numbers — the manual's `29-performance.md` chapter owns those. The Snails README uses the same opening paragraph.
 - **Blog (`/blog/`)** is the dated reasoning. A post can argue, cite, and record what was decided at the time; it is not the current reference. The manual wins when the two disagree, and a post that needs a new decision is a new post.
 
 If a sentence can move between the landing and the manual unchanged, treat it as definition copy and keep it in the manual. The landing must add the choice-making claim.
@@ -93,7 +93,7 @@ The `--syntax-*` roles in `src/styles/tokens.css` are the only place a code colo
 
 ## Landing page figures
 
-The performance section on `/` carries its figures directly in `src/pages/index.astro`. The manual's "How it compares" section and [snails-benchmark](https://github.com/snails-rb/snails-benchmark) hold the full table and method; update the page numbers when the benchmark results change.
+The performance section on `/` carries its figures directly in `src/pages/index.astro`. The manual's Performance chapter and [snails-benchmark](https://github.com/snails-rb/snails-benchmark) hold the full table and method; update the page numbers when the benchmark results change.
 
 There is no loader that reads the manual table, so a manual refresh does not change the landing page. The page and the manual are two places to update when the benchmark changes.
 
@@ -116,4 +116,4 @@ npm run preview            # serve dist/ from the domain root
 
 ## Decisions
 
-The plan behind this site — scope, hosting, build pipeline, and the measurements they rest on — lives in the Snails planning repo: `plans/website.md`.
+The plan behind this site — scope, hosting, build pipeline, and the measurements behind the decisions — lives in the Snails planning repo: `plans/website.md`.
