@@ -41,10 +41,10 @@ const figures = {
     { label: 'Rails (cluster mode)', requests: 16209 },
     { label: 'Rails (default)', requests: 4262 },
   ],
-  clusterRatio: 3,
-  defaultsRatio: '11.9',
 };
 const fastest = Math.max(...figures.series.map((target) => target.requests));
+const clusterRatio = String(Math.round(figures.series[0].requests / figures.series[1].requests));
+const defaultsRatio = (figures.series[0].requests / figures.series[2].requests).toFixed(1);
 const latency = ['1.3 ms', '4.7 ms'];
 const memory = ['30 MiB', '701 MiB'];
 const boot = ['9 ms', '1.0 s', '1.0 s'];
@@ -159,8 +159,8 @@ const boot = ['9 ms', '1.0 s', '1.0 s'];
       <h2 class="perf-title" id="performance">Performance</h2>
 
       <p class="perf-lede">
-        Snails delivers about <strong>{figures.clusterRatio}×</strong> the throughput of Rails in
-        cluster mode and <strong>{figures.defaultsRatio}×</strong> that of a default Rails app — the
+        Snails delivers about <strong>{clusterRatio}×</strong> the throughput of Rails in
+        cluster mode and <strong>{defaultsRatio}×</strong> that of a default Rails app — the
         same <code>GET /up</code> on the same 8-core machine. It compiles to native code without
         Ruby's GVL, so one process uses every core; Rails needs a worker process per core to use the
         same hardware.
