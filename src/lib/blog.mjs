@@ -114,11 +114,7 @@ function loadPost(folder, dir) {
     throw postError(file, 'the post has no body after its title');
   }
 
-  const assets = readdirSync(path.join(dir, folder), { withFileTypes: true })
-    .filter((entry) => entry.isFile() && entry.name !== 'index.md' && !entry.name.startsWith('.'))
-    .map((entry) => entry.name);
-
-  return { slug, title, description, date, updated, author, draft, body, assets };
+  return { slug, title, description, date, updated, author, draft, body };
 }
 
 /**

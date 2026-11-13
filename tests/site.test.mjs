@@ -175,7 +175,7 @@ test('draft posts stay out of the published list', () => {
   try {
     writePost('published', false);
     writePost('draft', true);
-    const published = loadPosts({ dir });
+    const published = loadPosts({ dir, includeDrafts: false });
     const all = loadPosts({ dir, includeDrafts: true });
     assert.deepEqual(published.map((post) => post.slug), ['published']);
     assert.deepEqual(

@@ -98,4 +98,3 @@ Snails is for the case where the JSON boundary is the product, the deployment sh
 - [Snails benchmark](https://github.com/snails-rb/snails-benchmark) — method and raw results.
 - [Spinel](https://github.com/matz/spinel) — the Ruby-to-native compiler.
 - [Rails 7 release notes](https://rubyonrails.org/2021/12/15/Rails-7-fulfilling-a-vision) — the Hotwire default and the monolith it serves.
-- [Stack Overflow 2026 AI survey](https://survey.stackoverflow.co/2026/ai) — how teams use coding assistants and agents.
