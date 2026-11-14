@@ -9,13 +9,13 @@ Snails is a Rails-like framework for API-only Ruby apps. It keeps the Rails conv
 
 The design assumes coding agents write the implementation and humans review the code and decide what ships. That is the starting point, not a side note. The choices below follow from that workflow: keep the code small enough for a reviewer to read, keep the SQL visible, and make the default path the one a reviewer needs to check.
 
-## The workflow this design assumes
+## The coding-agent workflow
 
 A single server-rendered stack, an ORM, and the Ruby gem ecosystem made sense when a human team wrote every line. One stack meant one codebase. An ORM saved the team from writing common queries, and gems supplied behavior the team did not want to build. Coding agents change those reasons. They write SQL well, maintain a backend and a frontend as two stacks, and implement a small missing behavior instead of adding a dependency. Snails is built for that change.
 
 The framework does not remove review. It makes review the point. The agent writes the code; the reviewer checks the route, the SQL, the migration, and the test evidence, and decides what ships. The rest of this article explains how each choice serves that workflow.
 
-## The Rails conventions are predictable for agents and reviewers
+## Predictable Rails conventions
 
 The point of the Rails conventions is predictability: an agent can add code without inventing a layout, and a reviewer knows where to look. Routes live in `config/routes.rb`, controllers are classes with actions, forms own validation, mailers and jobs have their own folders, and migrations are numbered files. A new endpoint has one obvious place, and a reviewer can find the request path without a map. The [Coming from Rails](/manual/coming-from-rails/) chapter is the translation table for the habits that carry over and the ones that do not.
 
@@ -25,7 +25,7 @@ The API is the product: the frontend is a separate choice. Rails 7 made Hotwire 
 
 The framework has no session store. The frontend owns rendering; the app owns its credential model and session design. The framework provides the HTTP authentication handshake, not a user model.
 
-## The model layer is a standard API over SQL
+## Models over SQL
 
 Coding agents write SQL well; an ORM's abstraction adds little for them. They need a standard API for the common reads and writes. Without one, every model grows its own helpers and the code becomes inconsistent. `Sqlx` is that standard API, not a domain model. It keeps the common path the same across models: the agent calls the same methods, and the reviewer reads the SQL and the bound values.
 
@@ -52,7 +52,7 @@ A schema change is a numbered SQL file under `db/migrate/`. `snails migrate appl
 ALTER TABLE posts ADD COLUMN slug TEXT;
 ```
 
-## Performance is a key design choice
+## Performance first
 
 Rails is often criticized for its performance. Ruby's global VM lock (GVL) limits one process to one thread of application code. Rails runs worker processes to use more cores; each worker carries its own VM, connection pool, heap, and resident set.
 
@@ -60,11 +60,11 @@ Snails makes a major architectural choice: no Ruby runtime, no gem compatibility
 
 The no-gem choice is what coding agents make practical. A gem assumes a Ruby runtime and a Bundler load path; the binary has none. The framework provides the helpers an API app needs, and the app provides the rest; the agent implements the small missing behavior in the app, in the same language and test suite. That is why the performance choice is practical now.
 
-## Tests run against the real server
+## Integration tests against a real server
 
 Stubs and mocks are easier to write; an agent left to choose will often produce a suite that describes the system instead of exercising it. The harness makes integration the default: `bin/test` builds the app, boots it on a spare port, and sends real HTTP requests through the harness. One fresh server serves the suite; each case resets the tables it declares. Nothing mocks the framework out of the way. A passing suite exercises the app.
 
-## The workflow these choices serve
+## The resulting workflow
 
 The choices reinforce each other. A small model API keeps the SQL visible. A native binary removes the Ruby runtime between the app and the request. A real-server harness exercises the HTTP path. The result is a workflow: the agent writes inside a small, standard API; the reviewer reads the route, the SQL, the migration, and the test evidence; the binary and the harness make that evidence real. The framework's job is to keep that workflow small and honest.
 
