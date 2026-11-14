@@ -1,19 +1,19 @@
 ---
 title: The Snails Design
-description: The design choices behind Snails, and the workflow they serve.
+description: The design choices behind Snails, and the Rails abstraction trade they change.
 date: 2026-11-13
 author: Snails
 ---
 
-Snails is a Rails-like framework for API-only Ruby apps. It keeps the Rails conventions that make an API app predictable — routes, controllers, form objects, mailers, jobs, and a conventional folder layout — and gives the framework a small API and a different runtime. This is not a list of features missing from Rails. It is a set of design choices, each made for a reason.
+Snails is a Rails-like framework for API-only Ruby apps. It keeps the Rails conventions that make an API app predictable — routes, controllers, form objects, mailers, jobs, and a conventional folder layout — and compiles the app, the framework, and the HTTP server into one native executable. The design keeps the developer-friendly Rails conventions and removes the abstractions that were chosen for human writing and added runtime overhead.
 
-The design assumes coding agents write the implementation and humans review the code and decide what ships. That is the starting point, not a side note. The choices below follow from that workflow: keep the code small enough for a reviewer to read, keep the SQL visible, and make the default path the one a reviewer needs to check.
+## Rails' abstraction trade
 
-## The coding-agent workflow
+Rails is developer-friendly because it abstracts work a human would otherwise do: ActiveRecord hides SQL, the view layer and asset pipeline hide the browser stack, and gems supply behavior a team would otherwise build. Those abstractions made a human team faster, and Rails accepted the runtime overhead: a Ruby runtime, a GVL, worker processes, and layers between the request and the database.
 
-A single server-rendered stack, an ORM, and the Ruby gem ecosystem made sense when a human team wrote every line. One stack meant one codebase. An ORM saved the team from writing common queries, and gems supplied behavior the team did not want to build. Coding agents change those reasons. They write SQL well, maintain a backend and a frontend as two stacks, and implement a small missing behavior instead of adding a dependency. Snails is built for that change.
+Coding agents change the calculation. They write SQL, maintain a backend and a frontend as two stacks, and implement a small missing behavior instead of adding a dependency. The abstractions that saved a human team time now add layers an agent does not need and a reviewer has to trust. Snails keeps the Rails conventions and the developer-friendly API style, and removes the layers that add runtime overhead: no ORM, no view layer, no gem compatibility, one native binary. The developer-friendly conventions no longer have to carry that overhead.
 
-The framework does not remove review. It makes review the point. The agent writes the code; the reviewer checks the route, the SQL, the migration, and the test evidence, and decides what ships. The rest of this article explains how each choice serves that workflow.
+A common argument now is that abstraction is over. The claim is too broad. The narrower claim is that the abstractions Rails chose for human writing no longer earn their runtime overhead when agents write the code. Abstraction is still necessary, but it must be light and shared: conventions and rules the agent follows and the reviewer checks. The agent produces predictable code; the reviewer checks the route, the SQL, the migration, and the test evidence, and decides what ships. Review is the constraint, not the reason for the design. The reason is the abstraction trade: keep what makes Rails pleasant to use, remove what makes it slow.
 
 ## Predictable Rails conventions
 
@@ -64,11 +64,11 @@ The no-gem choice is what coding agents make practical. A gem assumes a Ruby run
 
 Stubs and mocks are easier to write; an agent left to choose will often produce a suite that describes the system instead of exercising it. The harness makes integration the default: `bin/test` builds the app, boots it on a spare port, and sends real HTTP requests through the harness. One fresh server serves the suite; each case resets the tables it declares. Nothing mocks the framework out of the way. A passing suite exercises the app.
 
-## The resulting workflow
+## The resulting design
 
-The choices reinforce each other. A small model API keeps the SQL visible. A native binary removes the Ruby runtime between the app and the request. A real-server harness exercises the HTTP path. The result is a workflow: the agent writes inside a small, standard API; the reviewer reads the route, the SQL, the migration, and the test evidence; the binary and the harness make that evidence real. The framework's job is to keep that workflow small and honest.
+The choices reinforce each other. A small model API keeps the SQL visible. A native binary removes the Ruby runtime between the app and the request. A real-server harness exercises the HTTP path. The result is a framework that keeps the developer-friendly conventions without the heavy abstraction: the agent writes inside a small, standard API; the reviewer checks the route, the SQL, the migration, and the test evidence; the binary and the harness make that evidence real. The framework's job is to keep that review small and honest.
 
-Snails is for API-only apps whose API is the product, whose deployment is one binary, and whose team wants the SQL and the request path visible. The design assumes coding agents write the implementation and humans review and decide; that is the workflow it optimizes for. An app that needs server-rendered pages, the full Ruby gem ecosystem, or Active Record's object model is better served by Rails.
+Snails is for API-only apps whose API is the product, whose deployment is one binary, and whose team wants the SQL and the request path visible. It keeps the Rails conventions and removes the runtime overhead that came with the Rails default. Coding agents write the implementation; humans review the decisions and decide what ships. An app that needs server-rendered pages, the full Ruby gem ecosystem, or Active Record's object model is better served by Rails.
 
 ## Further reading
 
