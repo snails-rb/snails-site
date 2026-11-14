@@ -3,6 +3,13 @@
   <head>
     <%= erb(:headers) %>
     <link rel="stylesheet" href="<%= u = url_for(''); u + (u != '' ? '/' : '') %>css/site-chrome.css" type="text/css">
+    <!-- The brand favicon set is transparent ink, which disappears on a dark
+         browser tab. The site uses the same marks on a rounded paper tile
+         instead. -->
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon-180.png">
     <link rel="alternate" type="application/rss+xml" title="Snails Blog" href="https://snails-rb.org/blog/rss.xml">
   </head>
   <body>
@@ -12,7 +19,11 @@
          manual and the API reference does not change the top of the page. -->
     <header class="site-header">
       <div class="site-header-inner">
-        <a class="brand" href="/">Snails</a>
+        <a class="brand" href="/">
+          <!-- The site is dark-only, so the header uses the white lockup;
+               the ink lockup is for light backgrounds. -->
+          <img src="/brand/lockup-horizontal-white.svg" alt="Snails" width="71" height="16">
+        </a>
         <nav class="site-nav">
           <a href="<%= ENV.fetch("MANUAL_ENTRY_URL") %>">Manual</a>
           <a href="/blog/">Blog</a>

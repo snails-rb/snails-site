@@ -26,14 +26,19 @@
 }
 
 .site-header .brand {
-  font-size: var(--text-base);
-  font-weight: var(--weight-brand);
-  color: var(--syntax-pink);
+  display: inline-flex;
+  align-items: center;
   text-decoration: none;
 }
 
-.site-header .brand:hover {
-  color: var(--accent-strong);
+.site-header .brand img {
+  display: block;
+  height: 1rem;
+  width: auto;
+}
+
+.site-header .brand:hover img {
+  opacity: 0.85;
 }
 
 /* Navigation sits one step below the body so it reads as chrome, not content.

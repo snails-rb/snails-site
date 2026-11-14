@@ -238,6 +238,30 @@ test('the built site has the landing page, the manual, the API reference, and th
   }
 });
 
+test('every page with the site header carries the favicon and the brand lockup', () => {
+  // The header and favicon are written twice — Astro for the pages and YARD
+  // for /api/ — so a page can lose either without breaking a content link.
+  // The YARD list pages are navigation frames and have no site header, so they
+  // are out of scope. The favicon files are paper tiles on purpose: the
+  // transparent brand set disappears on a dark browser tab.
+  for (const file of htmlFiles(dist)) {
+    const html = readFileSync(file, 'utf8');
+    if (!html.includes('class="site-header"')) continue;
+    assert.ok(
+      html.includes('<link rel="icon" href="/favicon.ico"'),
+      `${path.relative(dist, file)} has no favicon`,
+    );
+    assert.ok(
+      html.includes('rel="apple-touch-icon"'),
+      `${path.relative(dist, file)} has no touch icon`,
+    );
+    assert.ok(
+      html.includes('class="brand"') && html.includes('src="/brand/lockup-horizontal-white.svg"'),
+      `${path.relative(dist, file)} header has no brand lockup`,
+    );
+  }
+});
+
 test('the feed carries every published post with absolute links', () => {
   // The feed is the copy a newsletter or reader sees. It has to list every
   // published post, address each one absolutely, and never carry a draft or a
