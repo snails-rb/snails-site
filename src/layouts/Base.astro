@@ -31,6 +31,13 @@ const canonicalUrl = absoluteUrl(canonical);
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- The brand favicon set is transparent ink, which disappears on a dark
+         browser tab. The site uses the same marks on a rounded paper tile
+         instead. -->
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon-180.png" />
     <title>{pageTitle}</title>
     <meta name="description" content={pageDescription} />
     <link rel="canonical" href={canonicalUrl} />
@@ -49,7 +56,11 @@ const canonicalUrl = absoluteUrl(canonical);
   <body>
     <header class="site-header">
       <div class="site-header-inner">
-        <a class="brand" href="/">Snails</a>
+        <a class="brand" href="/">
+          <!-- The site is dark-only, so the header uses the white lockup;
+               the ink lockup is for light backgrounds. -->
+          <img src="/brand/lockup-horizontal-white.svg" alt="Snails" width="71" height="16" />
+        </a>
         <nav class="site-nav">
           <a class={section === 'manual' ? 'active' : ''} href={firstChapterUrl()}>Manual</a>
           <a class={section === 'blog' ? 'active' : ''} href="/blog/">Blog</a>

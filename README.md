@@ -31,6 +31,8 @@ To see the built site the way the host serves it, run `npm run preview` after a 
 
 There is no manual landing page: the chapter list is in every chapter's sidebar, so every link to the manual goes straight to the first chapter. `/manual/` is not a route.
 
+Browser and header assets live in `public/`: `favicon.ico` with its PNG sizes, and `brand/lockup-horizontal-white.svg` for the header lockup.
+
 The site holds the vendored manual and its own blog posts. `runtime/` lives only in the Snails repo — `bin/build-api` fetches it at build time, so the API reference can never describe an older tree than the one the source has. The manual copy is committed because the chapter list is part of the site's own navigation; refresh it instead of editing it:
 
 ```sh
