@@ -393,7 +393,7 @@ test('/api/ is the site\'s own index, not the source repo README', () => {
   // carry our text — not the upstream repository's install and CI notes.
   const html = readFileSync(path.join(dist, 'api', 'index.html'), 'utf8');
   assert.ok(
-    html.includes('The six namespaces below are the framework surface'),
+    html.includes('The public API is organized into six namespaces'),
     'the API index is not templates/yard/api-index.md',
   );
   assert.ok(

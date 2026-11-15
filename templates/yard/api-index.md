@@ -5,11 +5,19 @@
   <p class="api-meta">1.0 release candidate · MIT licensed · <a href="https://github.com/snails-rb/snails">Source on GitHub</a> · <a href="/manual/welcome-to-snails/">Read the manual</a></p>
 </div>
 
-## What the reference covers
+## Framework namespaces
 
-The app is a JSON API. Controllers answer JSON, models are plain classes over SQL with `Sqlx` for the common reads and writes, forms own validation, and mailers and jobs have their own folders. The six namespaces below are the framework surface; the [manual](/manual/welcome-to-snails/) explains how they fit together.
+The public API is organized into six namespaces. `Snails` holds the app-facing pieces and `Sqlx` the data layer; `ActionController` and `ActionDispatch` handle the request path; `ActionMailer` and `ActiveJob` cover mail and background work. The cards below open each namespace, and the [manual](/manual/welcome-to-snails/) explains how they fit together.
 
 <div class="api-modules">
+  <a class="api-module" href="/api/Snails.html">
+    <span class="api-module-name">Snails</span>
+    <span class="api-module-body">App configuration, forms, logging, cache, time zones, the test harness, and the health check.</span>
+  </a>
+  <a class="api-module" href="/api/Sqlx.html">
+    <span class="api-module-name">Sqlx</span>
+    <span class="api-module-body">Models over SQL, queries, rows, database adapters, enums, and error classes.</span>
+  </a>
   <a class="api-module" href="/api/ActionController.html">
     <span class="api-module-name">ActionController</span>
     <span class="api-module-body">Controllers, action params, the HTTP authentication handshake, JSON rendering, and rate limiting.</span>
@@ -25,14 +33,6 @@ The app is a JSON API. Controllers answer JSON, models are plain classes over SQ
   <a class="api-module" href="/api/ActiveJob.html">
     <span class="api-module-name">ActiveJob</span>
     <span class="api-module-body">Jobs, the in-process queue, the database queue, and the scheduler that runs delayed work.</span>
-  </a>
-  <a class="api-module" href="/api/Sqlx.html">
-    <span class="api-module-name">Sqlx</span>
-    <span class="api-module-body">Models over SQL, queries, rows, database adapters, enums, and error classes.</span>
-  </a>
-  <a class="api-module" href="/api/Snails.html">
-    <span class="api-module-name">Snails</span>
-    <span class="api-module-body">App configuration, forms, logging, cache, time zones, the test harness, and the health check.</span>
   </a>
 </div>
 
