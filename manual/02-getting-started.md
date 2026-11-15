@@ -53,7 +53,7 @@ snails new myapp
 cd myapp
 ```
 
-`new` writes a small but complete app. It answers `GET /up`, carries a test harness, runs through `bin/dev` and `bin/test`, and records the runtime and compiler it builds with in `pins.toml`. You do not fetch or match versions by hand; the first command that needs the toolchain assembles the pinned one.
+`new` writes a small but complete app. It answers `GET /up`, carries a test harness, runs through `bin/dev` and `bin/test`, and records the framework and compiler it builds with in `pins.toml`. You do not fetch or match versions by hand; the first command that needs the toolchain assembles the pinned one.
 
 ```text
 [snails] created myapp (GET /up)
@@ -114,6 +114,6 @@ The count is case files, not individual cases. As your app grows you add files b
 
 ## Where to go from here
 
-That is the whole loop: edit, `bin/dev` to try it live, `bin/test` before you call it complete. Your controllers live in `app/controllers`, routes in `config/routes.rb`, and data in the database that `bin/dev` uses. A fresh app has no controllers; `GET /up` comes from the runtime.
+That is the whole loop: edit, `bin/dev` to try it live, `bin/test` before you call it complete. Your controllers live in `app/controllers`, routes in `config/routes.rb`, and data in the database that `bin/dev` uses. A fresh app has no controllers; `GET /up` comes from the framework.
 
 [Your App's Structure](05-your-app-structure.md) describes the folder layout, and [Routes and Controllers](06-routes-and-controllers.md) begins the request path.

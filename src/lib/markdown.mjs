@@ -3,7 +3,7 @@
 // Both content trees live outside `src/`, so Astro's own markdown pipeline
 // never sees them. The loader builds the HTML here instead: headings get
 // stable anchors, and every fenced block goes through the site's highlighter
-// so the manual, the blog, and the API reference share one palette.
+// so the manual, the blog, and the API documentation share one palette.
 //
 // The manual rewrites chapter links before calling this; the blog writes site
 // paths directly. That difference stays in each loader, not in this file.

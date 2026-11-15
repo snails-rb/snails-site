@@ -84,7 +84,7 @@ function withoutTrailingNewline(code) {
  * Highlight one code block as HTML.
  *
  * The output is `<pre class="code language-<label>">` so the manual styles it
- * with the same rules as the API reference's blocks, and every token colour is
+ * with the same rules as the API documentation's blocks, and every token colour is
  * a `var(--syntax-…)` reference from `tokens.css`.
  *
  * @param {string} code the block's body, without the fence lines
