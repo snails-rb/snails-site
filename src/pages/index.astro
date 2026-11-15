@@ -59,7 +59,7 @@ const startup = { snails: '9 ms', railsDefault: '1.0 s' };
           Snails is a Rails-like framework for API-only Ruby apps. It keeps the Rails conventions
           and removes the layers that add runtime overhead, then compiles the app into one native
           binary: no Ruby runtime, no GVL, no Puma workers. One process serves requests on every
-          core and boots in single-digit milliseconds. On our GET /up benchmark, that's about 3×
+          core and boots in single-digit milliseconds. The benchmark shows about 3×
           the throughput of Rails in cluster mode, with peak-memory savings of 10× or more under load,
           and about 12× the throughput of a default Rails app. A separate single-row DB read measures
           about 3.1×.
@@ -121,7 +121,8 @@ const startup = { snails: '9 ms', railsDefault: '1.0 s' };
           <h3 class="feature-title">The Rails conventions</h3>
           <span class="feature-body">
             Routes, controllers, migrations, forms, mail, and jobs use the conventions you know.
-            Models are plain classes over your tables; the SQL stays visible.
+            Models are plain classes over your tables; the schema generates their readers, and the
+            SQL stays visible.
           </span>
           <span class="feature-go">Coming from Rails →</span>
         </a>
@@ -145,7 +146,7 @@ const startup = { snails: '9 ms', railsDefault: '1.0 s' };
           <h3 class="feature-title">Tests against a real server</h3>
           <span class="feature-body">
             <code>bin/test</code> builds the app, boots it on a spare port, and sends real HTTP
-            requests. Nothing mocks the framework out of the way.
+            requests. The framework is not mocked.
           </span>
           <span class="feature-go">Testing →</span>
         </a>
@@ -164,9 +165,14 @@ const startup = { snails: '9 ms', railsDefault: '1.0 s' };
       <p class="perf-lede">
         Snails delivers about <strong>{clusterRatio}×</strong> the throughput of Rails in
         cluster mode and <strong>{defaultsRatio}×</strong> that of a default Rails app — the
-        same <code>GET /up</code> on the same 8-core machine. It compiles to native code without
+        same benchmark on the same 8-core machine. It compiles to native code without
         Ruby's GVL; one process uses every core, and Rails needs a worker process per core to use the
         same hardware.
+      </p>
+
+      <p class="perf-production">
+        In production, a migrated Rails app runs its full application on a 512 MB micro server,
+        while the Rails version is OOM-killed at that size.
       </p>
 
       <figure class="perf-chart">
