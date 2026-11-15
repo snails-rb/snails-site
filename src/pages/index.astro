@@ -135,8 +135,8 @@ const startup = { snails: '9 ms', railsDefault: '1.0 s' };
         <a class="feature" href="/manual/performance/">
           <h3 class="feature-title">Every core, one process</h3>
           <span class="feature-body">
-            Native code has no GVL, so one process serves requests on every core. In cluster mode,
-            Rails adds a worker process per core to use more cores, and each worker carries its own
+            Native code has no GVL; one process serves requests across every core. In cluster mode,
+            Rails runs a separate worker process for each CPU core, and each worker carries its own
             VM, connection pool, and heap memory.
           </span>
           <span class="feature-go">Performance →</span>
