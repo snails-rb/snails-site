@@ -29,6 +29,8 @@ To see the built site the way the host serves it, run `npm run preview` after a 
 | `/blog/rss.xml` | RSS feed with the full post body | generated from `blog/` |
 | `/api/` | API documentation | `runtime/` in [`snails-rb/snails`](https://github.com/snails-rb/snails), rendered by YARD |
 
+The `/api/` landing page is site-owned (`templates/yard/api-index.md`); the class and method pages are rendered from `runtime/`.
+
 There is no manual landing page: the chapter list is in every chapter's sidebar, so every link to the manual goes straight to the first chapter. `/manual/` is not a route.
 
 Browser and header assets live in `public/`: `favicon.ico` with its PNG sizes, and `brand/lockup-horizontal-white.svg` for the header lockup.

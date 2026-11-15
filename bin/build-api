@@ -233,6 +233,107 @@ a, #content a, #content a:visited, #menu a, #menu a:visited {
   background: transparent;
 }
 
+/* The index has four sections and a short reading flow; YARD's auto TOC
+   competes with the lede for width, and the sidebar already handles navigation.
+   Keep the TOC on reference pages, where it earns its space. */
+#content:has(.api-intro) #toc {
+  display: none;
+}
+
+/* The index is a reading page, not a dense reference page: it gets a lede,
+   module cards, and a short manual list. The cards use the same surface and
+   accent as the landing feature cards so the API section reads as the same
+   site. */
+#filecontents .api-intro {
+  max-width: 48rem;
+  margin: var(--space-2) 0 var(--space-6);
+}
+
+#filecontents .api-lede {
+  margin: 0 0 var(--space-4);
+  color: var(--muted);
+  font-size: var(--text-lg);
+  line-height: var(--leading-prose);
+}
+
+#filecontents .api-meta {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+#filecontents h2 {
+  margin: var(--space-8) 0 var(--space-3);
+  padding-bottom: var(--space-2);
+}
+
+#filecontents .api-modules {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin: var(--space-5) 0 0;
+}
+
+#filecontents .api-module {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+#filecontents .api-module:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+#filecontents .api-module-name {
+  color: var(--syntax-cyan);
+  font-size: var(--text-base);
+  font-weight: var(--weight-heading);
+  line-height: var(--leading-heading);
+}
+
+#filecontents .api-module-body {
+  color: var(--muted);
+  font-size: var(--text-md);
+  line-height: var(--leading-prose);
+}
+
+#filecontents .api-note {
+  max-width: 48rem;
+  margin: var(--space-4) 0 0;
+  color: var(--muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-prose);
+}
+
+#filecontents .api-links {
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+#filecontents .api-links li {
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+#filecontents .api-links li:first-child {
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 40rem) {
+  #filecontents .api-modules {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 #main {
   background: var(--bg);
   /* YARD insets #main by 1.2em. The nav ends at a border; 1rem is the content
