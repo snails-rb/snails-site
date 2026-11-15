@@ -802,7 +802,8 @@ article strong {
   font-size: var(--text-xs);
 }
 
-.front .perf-method {
+.front .perf-method,
+.front .perf-production {
   max-width: var(--measure);
   margin: var(--space-4) 0 0;
   color: var(--muted);
