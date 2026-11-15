@@ -1,6 +1,6 @@
 /* The site header. One source for both halves of the site: Astro imports this
    file, and build-api copies it into the YARD output, so the manual and the
-   API reference cannot drift apart at the top of the page. */
+   API documentation cannot drift apart at the top of the page. */
 
 .site-header {
   position: sticky;

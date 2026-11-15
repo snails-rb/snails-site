@@ -4,7 +4,7 @@ name: Refresh the manual
 # hand. The chapters live in snails-rb/snails; this copies them into manual/ and
 # commits what changed.
 #
-# The API reference is not touched here: bin/build-api fetches runtime/ from the
+# The API documentation is not touched here: bin/build-api fetches runtime/ from the
 # same repo at build time, so it is always built from the current tree. There is
 # nothing to keep in sync.
 #

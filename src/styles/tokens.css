@@ -1,5 +1,5 @@
 /* Palette and type. Dracula, used dark-only: one theme across the landing page,
-   the manual, and the API reference. Values are the official ones from
+   the manual, and the API documentation. Values are the official ones from
    draculatheme.com (MIT) except `--muted`, which is lightened — the spec's
    comment colour (#6272A4) is only 3.0:1 on the background, fine for a code
    comment but too weak for body-adjacent text.
@@ -60,7 +60,7 @@
   --accent-strong: #ff79c6; /* pink, hover */
 
   /* Dracula's token colours, named by role rather than by hue so the manual's
-     highlighter and the API reference name the same token. `--syntax-comment`
+     highlighter and the API documentation name the same token. `--syntax-comment`
      keeps the spec value: 3.0:1 is too weak for prose but fine for a comment,
      which the surrounding line already distinguishes. */
   --syntax-comment: #6272a4;

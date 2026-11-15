@@ -1,5 +1,5 @@
 #!/bin/bash
-# Render the API reference into public/api/ from the runtime source.
+# Render the API documentation into public/api/ from the runtime source.
 #
 #   bin/build-api [--check] [<snails checkout>]
 #

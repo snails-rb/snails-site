@@ -213,9 +213,9 @@ test('a post with an impossible date is refused', () => {
   }
 });
 
-test('the built site has the landing page, the manual, the API reference, and the blog', () => {
+test('the built site has the landing page, the manual, the API documentation, and the blog', () => {
   assert.ok(existsSync(path.join(dist, 'index.html')), 'run npm run build first');
-  assert.ok(existsSync(path.join(dist, 'api', 'index.html')), 'API reference missing');
+  assert.ok(existsSync(path.join(dist, 'api', 'index.html')), 'API documentation missing');
   assert.ok(existsSync(path.join(dist, 'blog', 'index.html')), 'blog index missing');
   assert.ok(existsSync(path.join(dist, 'blog', 'rss.xml')), 'blog feed missing');
 
@@ -393,7 +393,7 @@ test('/api/ is the site\'s own index, not the source repo README', () => {
   // carry our text — not the upstream repository's install and CI notes.
   const html = readFileSync(path.join(dist, 'api', 'index.html'), 'utf8');
   assert.ok(
-    html.includes('public surface of the Snails runtime'),
+    html.includes('public surface of the Snails framework'),
     'the API index is not templates/yard/api-index.md',
   );
   assert.ok(

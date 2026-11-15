@@ -120,25 +120,27 @@ const startup = { snails: '9 ms', railsDefault: '1.0 s' };
         <a class="feature" href="/manual/coming-from-rails/">
           <h3 class="feature-title">The Rails conventions</h3>
           <span class="feature-body">
-            Routes, controllers, migrations, forms, mail, and jobs use the conventions you know.
-            Models are plain classes over your tables; the schema generates their readers, and the
-            SQL stays visible.
+            Routes, controllers, forms, mailers, and jobs follow the Rails layout, so every
+            endpoint has one obvious place. Models are plain classes over your tables, with column
+            readers built from the schema and readable SQL.
           </span>
           <span class="feature-go">Coming from Rails →</span>
         </a>
         <a class="feature" href="/manual/deploying/">
           <h3 class="feature-title">One native binary</h3>
           <span class="feature-body">
-            Your app, the framework, and the HTTP server compile into one file. The server needs
-            no Ruby runtime — ship the binary or the container image.
+            The app, the framework, and the HTTP server compile into one binary, while the code
+            stays Ruby. Ship the file or a container image; there is no Ruby runtime, no Bundler,
+            and no gem dependencies to install.
           </span>
           <span class="feature-go">Deploying →</span>
         </a>
         <a class="feature" href="/manual/performance/">
           <h3 class="feature-title">Every core, one process</h3>
           <span class="feature-body">
-            Native code has no GVL; one process serves requests on all available cores.
-            Memory does not grow with worker count.
+            Native code has no GVL, so one process serves requests on all available cores. Rails
+            runs a worker process per core to use the same hardware, and each worker carries its
+            own VM, connection pool, and heap memory.
           </span>
           <span class="feature-go">Performance →</span>
         </a>
@@ -146,7 +148,8 @@ const startup = { snails: '9 ms', railsDefault: '1.0 s' };
           <h3 class="feature-title">Tests against a real server</h3>
           <span class="feature-body">
             <code>bin/test</code> builds the app, boots it on a spare port, and sends real HTTP
-            requests. The framework is not mocked.
+            requests. One fresh server serves the suite; each case resets the tables it declares,
+            and the suite never mocks any part of the framework.
           </span>
           <span class="feature-go">Testing →</span>
         </a>
@@ -234,17 +237,17 @@ const startup = { snails: '9 ms', railsDefault: '1.0 s' };
     <div class="cards">
       <a class="card" href={firstChapterUrl()}>
         <span class="card-title">Manual</span>
-        <span class="card-body">The full guide, from install to deploy.</span>
+        <span class="card-body">The full guide, from install to first deploy.</span>
         <span class="card-go">Read the manual →</span>
       </a>
       <a class="card" href="/api/">
-        <span class="card-title">API reference</span>
-        <span class="card-body">The runtime's public API, generated from its comments.</span>
+        <span class="card-title">API Documentation</span>
+        <span class="card-body">The framework's public classes and methods.</span>
         <span class="card-go">Browse the API →</span>
       </a>
       <a class="card" href="/blog/">
         <span class="card-title">Blog</span>
-        <span class="card-body">Dated notes on the design, benchmarks, and releases.</span>
+        <span class="card-body">Design notes, benchmarks, and release posts.</span>
         <span class="card-go">Read the blog →</span>
       </a>
       <a class="card" href="https://github.com/snails-rb/snails">

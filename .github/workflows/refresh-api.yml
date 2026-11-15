@@ -1,4 +1,4 @@
-name: Refresh the API reference
+name: Refresh the API documentation
 
 # Rebuilds and redeploys the site so /api/ follows the current runtime/ tree.
 #

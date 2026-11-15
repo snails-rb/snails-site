@@ -1,6 +1,6 @@
 # snails-site
 
-The official Snails site: a landing page, the manual, the blog, and the API reference, built as one static site.
+The official Snails site: a landing page, the manual, the blog, and the API documentation, built as one static site.
 
 Live at <https://snails-rb.org/> (GitHub Pages, served through Cloudflare from the domain root).
 
@@ -8,13 +8,13 @@ Live at <https://snails-rb.org/> (GitHub Pages, served through Cloudflare from t
 
 ```sh
 npm install          # once
-bundle install       # once — YARD renders the API reference
+bundle install       # once — YARD renders the API documentation
 npm run dev          # http://localhost:4211/
 ```
 
-`npm run dev` renders the landing page, manual, and blog. It does not render the API reference; run `npm run api -- path/to/snails` first if you want `/api/` while developing, because the dev server serves whatever is in `public/api/`.
+`npm run dev` renders the landing page, manual, and blog. It does not render the API documentation; run `npm run api -- path/to/snails` first if you want `/api/` while developing, because the dev server serves whatever is in `public/api/`.
 
-`npm run build` renders the API reference into `public/api/`, copies blog attachments into `public/blog/`, then builds the site into `dist/`. `npm test` checks the built output.
+`npm run build` renders the API documentation into `public/api/`, copies blog attachments into `public/blog/`, then builds the site into `dist/`. `npm test` checks the built output.
 
 To see the built site the way the host serves it, run `npm run preview` after a build; it serves `dist/` from the same domain root GitHub Pages uses.
 
@@ -27,13 +27,13 @@ To see the built site the way the host serves it, run `npm run preview` after a 
 | `/blog/` | dated posts, newest first | `blog/` (site-owned) |
 | `/blog/<slug>/` | one post | `blog/<slug>/index.md` |
 | `/blog/rss.xml` | RSS feed with the full post body | generated from `blog/` |
-| `/api/` | API reference | `runtime/` in [`snails-rb/snails`](https://github.com/snails-rb/snails), rendered by YARD |
+| `/api/` | API documentation | `runtime/` in [`snails-rb/snails`](https://github.com/snails-rb/snails), rendered by YARD |
 
 There is no manual landing page: the chapter list is in every chapter's sidebar, so every link to the manual goes straight to the first chapter. `/manual/` is not a route.
 
 Browser and header assets live in `public/`: `favicon.ico` with its PNG sizes, and `brand/lockup-horizontal-white.svg` for the header lockup.
 
-The site holds the vendored manual and its own blog posts. `runtime/` lives only in the Snails repo — `bin/build-api` fetches it at build time, so the API reference can never describe an older tree than the one the source has. The manual copy is committed because the chapter list is part of the site's own navigation; refresh it instead of editing it:
+The site holds the vendored manual and its own blog posts. `runtime/` lives only in the Snails repo — `bin/build-api` fetches it at build time, so the API documentation can never describe an older tree than the one the source has. The manual copy is committed because the chapter list is part of the site's own navigation; refresh it instead of editing it:
 
 ```sh
 bin/sync-manual                 # fetch the latest main over https
@@ -77,11 +77,15 @@ If a sentence can move between the landing and the manual unchanged, treat it as
 
 A repository-specific intro is not needed: visitors get the canonical definition, and evaluators get the landing pitch.
 
+The four feature cards are written to the same line count in each row, and the four link cards to two lines in their four-column row, so the rows align. A copy edit can add a line, so check the rendered rows after changing card copy.
+
+Site copy calls Snails the framework. The word `runtime` stays only for the Ruby runtime, things that happen at runtime, and the `runtime/` source path.
+
 The `<meta name="description">` in `src/layouts/Base.astro` is the default search/social snippet. A blog post passes its own `description`; the landing and manual keep the default from the landing pitch.
 
 ## Typography
 
-All four sections set type from one fixed scale in `src/styles/tokens.css`. A page picks a step; it does not invent a size. `bin/build-api` copies the same token file into the YARD output, so the API reference cannot drift from the manual, and `npm test` fails on any `font-size` that does not name a step.
+All four sections set type from one fixed scale in `src/styles/tokens.css`. A page picks a step; it does not invent a size. `bin/build-api` copies the same token file into the YARD output, so the API documentation cannot drift from the manual, and `npm test` fails on any `font-size` that does not name a step.
 
 Body prose is 15px, not the browser's 16px: JetBrains Mono is a monospace and every character is wider, so 16px monospace reads like 18px sans. Code, navigation, and tables sit one step down; headings use the larger steps. The reference is <https://omarchy.org/>, which reads at the same 15px.
 
@@ -91,7 +95,7 @@ The manual and blog are rendered by `marked` in `src/lib/markdown.mjs`, not by A
 
 The grammar table in `highlight.mjs` lists the fence labels a chapter or post may use. A fence with any other label fails the build instead of rendering uncoloured — add the grammar there when a post needs one. A bare fence renders as plain text.
 
-The `--syntax-*` roles in `src/styles/tokens.css` are the only place a code colour is written, and the API reference names them too: `bin/build-api` maps YARD's tokenizer classes onto the same roles.
+The `--syntax-*` roles in `src/styles/tokens.css` are the only place a code colour is written, and the API documentation names them too: `bin/build-api` maps YARD's tokenizer classes onto the same roles.
 
 ## Landing page figures
 
@@ -108,7 +112,7 @@ GitHub Pages serves the site at <https://snails-rb.org/> from the domain root. C
 ## Checks
 
 ```sh
-npm run build              # render the API reference and blog attachments, then build dist/
+npm run build              # render the API documentation and blog attachments, then build dist/
 npm test                   # built output: pages, links, type scale
 bin/build-api --check      # render the API twice and diff the results
 npm run preview            # serve dist/ from the domain root
