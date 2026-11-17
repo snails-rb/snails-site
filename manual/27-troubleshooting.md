@@ -40,7 +40,7 @@ A model exists but `db/schema.sql` does not. Run `snails migrate dump` to write 
 
 `ActionController::Params.require_key` raises `ParameterMissing` for an absent or blank value, and the dispatcher turns it into `{"error":"bad_request"}`. If a blank string is a valid value for that field, use `str` or `provided` instead of `require_key`. See [Requests and Parameters](07-requests-and-parameters.md).
 
-### A date, boolean, or JSON column raises during hydration
+### A date, boolean, or JSON column raises while a record is built
 
 `from_row` raises `ArgumentError` when a declared `datetime_columns`, `date_columns`, `boolean_columns`, or `json_columns` entry is not in the projection. A hand-written narrower SELECT must declare the narrowed columns or override `from_row`. The built-in `created_at`/`updated_at` pair is the only exception. See [Columns and Types](11-columns-and-types.md).
 
@@ -88,6 +88,6 @@ The source build runs a package smoke before caching. If OpenSSL or another pack
 
 ### The first `bin/dev` stops while compiling the app
 
-The app build links the C compiler, OpenSSL, SQLite, and jemalloc. A linker error such as `cannot find -lssl` names the missing development package; install the Linux or macOS packages under [Getting Started](02-getting-started.md#requirements) and run `bin/dev` again. On macOS, `bin/test` and `bin/dev` resolve the OpenSSL, jemalloc, and libpq directories through `pkg-config`; make sure the packages and the `PKG_CONFIG_PATH` line from [Getting Started](02-getting-started.md#requirements) are in place. `brew install postgresql` is keg-only and includes the server, `psql`, `pg_dump`, and libpq. The `PATH`, `PKG_CONFIG_PATH`, and `DYLD_FALLBACK_LIBRARY_PATH` exports in Getting Started point at its prefix; a client-only `libpq` install is the alternative if you connect to a server elsewhere. `snails doctor` checks the database client and the toolchain but does not probe the linker.
+The app build links the C compiler, OpenSSL, SQLite, and jemalloc. A linker error such as `cannot find -lssl` names the missing development package; install the Linux or macOS packages under [Getting Started](02-getting-started.md#requirements) and run `bin/dev` again. On macOS, `bin/test` and `bin/dev` add the Homebrew `pkg-config` directory and the library directories (`openssl`, `jemalloc`, `libpq`, `postgresql`) themselves — no export is needed. `brew install postgresql` is keg-only and includes the server, `psql`, `pg_dump`, and libpq. The `PATH` and `DYLD_FALLBACK_LIBRARY_PATH` exports in Getting Started point at its prefix; a client-only `libpq` install is the alternative if you connect to a server elsewhere. `snails doctor` checks the database client and the toolchain but does not probe the linker.
 
 When the symptom is not here, run `snails doctor` first — it checks the pin, the toolchain, the database, and the local clients before you go looking further.

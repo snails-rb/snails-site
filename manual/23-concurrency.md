@@ -10,10 +10,12 @@ The banner shows the process model:
 
 ```text
 manual-demo (spinel) listening on http://0.0.0.0:3000, pid 74898
-  one green thread per connection; OS workers: one per core (SPINEL_WORKERS=N to cap); processes: 1
+  one green thread per connection; OS workers: main + one per core (SPINEL_WORKERS=N sets the total); processes: 1
 ```
 
-`SPINEL_WORKERS` caps the OS worker threads; without it the framework uses one per core. The server accepts `-w N` and `WORKERS`, but it runs one process. Run more copies of the binary (or more containers) when one process is not enough; each copy is independent.
+`SPINEL_WORKERS` sets the total OS worker threads; unset, the runtime uses main plus one OS worker per core. The server accepts `-w N` and `WORKERS`, but it runs one process. Run more copies of the binary (or more containers) when one process is not enough; each copy is independent.
+
+The unset autodetect already gives two OS workers besides main on a two-core host and more on larger hosts, so leave `SPINEL_WORKERS` unset unless you need a different count. Only a one-core host falls below two OS workers besides main; there, set `SPINEL_WORKERS=3` when the process also runs jobs. Setting 3 on a larger host caps the workers it would otherwise get.
 
 `SIGTERM` and `SIGINT` set a stop flag that the accept loop checks once a second. The server exits on the next check instead of waiting out keep-alive connections; a client that needs a graceful drain should stop sending new work before the signal.
 
@@ -38,6 +40,14 @@ Each worker thread takes its own database connection and runs a drain. With the 
 A job runs outside a request, on the job thread's own database lease. A model call in a job therefore needs no request context. The pool constraint applies here too: N job threads plus request threads must fit in `DATABASE_POOL_SIZE`.
 
 The process queue holds at most 1,000 pending jobs. A full queue drops the new hand-off and writes one local warning; it does not grow without bound. The DB queue has no such cap because its rows are in the database.
+
+### Long jobs and serving
+
+A job that runs one long database statement holds its OS worker for the whole statement: the call has no yield point inside it. A collection raised meanwhile also waits for that worker, so the other workers park at the barrier with it. While the statement runs, nothing else in the process makes progress — a weekly scan over a multi-gigabyte database can stop `GET /up` for minutes.
+
+`SPINEL_WORKERS` is what gives serving a worker of its own. It counts the main thread, and connections and job threads run on the remaining OS workers, so a process that serves and runs jobs needs at least three (`N-1 = 2`). On a two-core or larger host the unset default already provides that (main plus one OS worker per core); only a one-core host needs `SPINEL_WORKERS=3` set explicitly. The database adapters already declare their calls `blocking: true`, so a collection does not wait for a worker inside one, and the second OS worker keeps answering while the statement runs.
+
+That still leaves one gap: a connection pinned to the busy worker waits for the statement, and every green thread stays on the worker it first ran on. A health check that lands there times out even though the process is otherwise healthy. When a job can run for minutes, give it its own process or container instead of sharing the serving one.
 
 ## What is shared
 
