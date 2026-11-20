@@ -2,6 +2,7 @@
 title: The Snails Design
 description: The design choices behind Snails — Rails conventions without the runtime overhead.
 date: 2026-11-13
+updated: 2026-11-20
 author: Snails
 ---
 
@@ -133,7 +134,7 @@ That is the only reason I built Snails. I want Ruby and Rails to keep being usef
 
 ## For Ruby and Rails developers
 
-I built a working framework, not a prototype. I have migrated an existing Rails app and run new apps in production. The [benchmark](https://github.com/snails-rb/snails-benchmark) shows about 3× the throughput of Rails in cluster mode and 10× or more peak-memory savings under load. Those are benchmark numbers; the [field report](/blog/why-i-didnt-rewrite-my-rails-app-in-rust/) measures the production node at steady state. In production, the migrated app runs the full application on a 1 GB node. 512 MB is the next target, not yet verified. The base design is validated in use. 1.0 was the first stable release; the project is on 1.x now. 2.0 and 3.0 will keep the same conventions.
+I built a working framework, not a prototype. I have migrated an existing Rails app and run new apps in production. The [benchmark](https://github.com/snails-rb/snails-benchmark) shows about 3× the throughput of Rails in cluster mode and 10× or more peak-memory savings under load. Those are benchmark numbers; the [field report](/blog/why-i-didnt-rewrite-my-rails-app-in-rust/) measures the production node at steady state. In production, the migrated app runs the full application on a 1 GB node. 512 MB is the next target, not yet verified. The base design is validated in use. 1.0 was the first stable release; the project is on 1.x now. The conventions are the compatibility promise, and they won't change.
 
 The next question is whether it fits the way other Ruby and Rails developers work. I would like to hear from Ruby and Rails developers: what you would try, what you would change, and what is missing. Interest, feedback, and ideas are the next step. The source is open, and the discussion is open. Open a [discussion](https://github.com/snails-rb/snails/discussions) or send an [issue](https://github.com/snails-rb/snails/issues) with the Rails convention you would miss.
 
