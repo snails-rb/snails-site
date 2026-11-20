@@ -20,16 +20,6 @@ I assumed the Postgres container was most of the memory. I moved the database to
 
 I also turned on zram. It took some of the pressure off swap and made deploys less likely to freeze the node, but the real problem was still there: two Rails processes sharing a 1 GB node.
 
-## Why not a bigger node?
-
-The target was the free-tier minimum. Amazon Free Tier and Oracle Always Free both offer a 1 GB option, and that was the box I wanted the service to run on. A 2 GB node would have fixed the deploy: the two Rails processes would have had room to overlap, and I could have run Puma in cluster mode. That's the obvious answer.
-
-Cost wasn't the point. Performance was. The bigger node would have solved the deploy by adding memory, not by making Rails need less of it. I wanted to know whether the conventions could survive on the same 1 GB hardware as the Rust service.
-
-I had ported a Rails job worker to a Rust microservice. The Rails job container, one process with the full stack loaded, used about 360 MB; the Rust service that replaced it used about 2 MB. If the Rust service does the same job in 2 MB, why use Rails? I couldn't answer that, and I didn't want to keep using Rails without an answer.
-
-A framework that needs more than the smallest free-tier node isn't usable for this class of service. But I didn't want to leave Rails. I wanted the conventions without the stack that made them expensive. That is the option the rest of this post is about.
-
 ## Rust, already shipped
 
 The port was for another Rails service, a smaller mobile API. It covered the API handlers and a job worker. The job worker is where I measured the memory: about 360 MB for the Rails job container, about 2 MB for the Rust service that replaced it, on the same 1 GB node. It's one data point, not a benchmark. But the gap was real.
@@ -80,6 +70,14 @@ That left more of the decisions to the agent: error handling, security boundarie
 That's the cost I feel every day. The bigger cost is that review doesn't scale: Rust gives me more code per behavior, and an agent writes more of it, so the review bill grows faster than the feature bill. In a codebase an agent writes, that's the wrong trade.
 
 Rust worked, but I didn't want to own it. I wanted the memory drop and code I could keep reading.
+
+## Why not a bigger node?
+
+The other obvious answer was a bigger node. Amazon Free Tier and Oracle Always Free both offer a 1 GB option, and that was the box I wanted the service to run on. A 2 GB node would have fixed the deploy: the two Rails processes would have had room to overlap, and I could have run Puma in cluster mode.
+
+Cost wasn't the point. Performance was. The bigger node would have solved the deploy by adding memory, not by making Rails need less of it. The Rust service already ran on 1 GB. The question was whether the Rails conventions could survive on the same hardware.
+
+A framework that needs more than the smallest free-tier node isn't usable for this class of service. That was the constraint I wasn't willing to give up. I wanted to keep the conventions inside it. That meant removing the stack that made them expensive to run.
 
 ## Roundhouse kept the Rails stack
 
