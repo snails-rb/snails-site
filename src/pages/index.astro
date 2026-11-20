@@ -5,7 +5,7 @@ import { highlightCode } from '../lib/highlight.mjs';
 
 const routeCode = [
   '# inside Snails::RouteTable.table',
-  'resources("/posts", PostsController, :json)',
+  '*resources("/posts", PostsController, :json)',
 ].join('\n');
 
 const controllerCode = [
