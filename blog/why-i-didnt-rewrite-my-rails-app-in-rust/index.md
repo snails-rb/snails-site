@@ -101,7 +101,7 @@ The source was still Rails. I wanted the app source to be the code I read and ch
 
 I wanted a framework for other API apps that kept the Rails conventions and removed the layers Rails added to make writing easier — Active Record, the HTML view layer, and the gems — along with the Ruby runtime those layers need.
 
-I could have contributed to Roundhouse instead. But a transpiler converts apps that already exist; I needed a framework for apps I hadn't written yet. So I built Snails.
+I could have contributed to Roundhouse instead. But I wanted a framework, not a transpiler. So I created Snails.
 
 The memory was about the same as Roundhouse's. The difference was that the code I was reading was the code I was running.
 
