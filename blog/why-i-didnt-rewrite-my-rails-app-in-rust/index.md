@@ -288,7 +288,7 @@ If the answer is no, stay on Rails. The memory problem is real, but the choice i
 
 Snails is at 1.x, and the public API is stable. The conventions are the compatibility promise, and they won't change.
 
-If you try Snails and hit a wall, I want to know.
+If you try Snails and hit a wall, [open an issue](https://github.com/snails-rb/snails/issues/new/choose). I want to know.
 
 The [manual's Coming from Rails chapter](/manual/coming-from-rails/) covers the port. The [Snails Design](/blog/the-snails-design/) makes the case. The [repository](https://github.com/snails-rb/snails) has the code, and the [benchmark](https://github.com/snails-rb/snails-benchmark) has the method and raw results.
 
