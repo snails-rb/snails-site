@@ -8,19 +8,19 @@ author: Rinn
 
 *Disclosure: I'm the author of Snails, the framework this post is about. The numbers are from my own deploys, not a lab.*
 
-In October, a deploy brought my Rails API service down. The app was a stock Rails API app on a 1 GB node with 951 MB usable, running a single Puma process, not a cluster. Rails starts from a high memory baseline: the app process alone was about 175 MB, and with Postgres the node was using 504 MB of 951 MB. Kamal starts the new container before it stops the old one, so during boot the node holds two Rails processes. The new process's boot peak was higher than its steady 175 MB. With the old one still serving, the node ran out of headroom and started swapping.
+In October, a deploy brought my Rails API service down. The app was a stock Rails API app on a 1 GB node with 951 MB usable, running a single Puma process, not cluster mode. Rails starts with a high memory footprint: the app process alone was about 175 MB, and with Postgres running, the node sat at 504 MB of 951 MB. Kamal starts the new container before it stops the old one, so during a deploy the node runs two Rails processes. The new process peaked higher during boot than its steady 175 MB. With the old process still serving, the node ran out of headroom and started swapping.
 
-The service is a telemetry backend. Five services send metrics and logs over OTLP/HTTP. The app has three routes: `/up`, `/v1/metrics`, and `/v1/logs`, all in `config/routes.rb`. Metrics roll up into five-minute windows; logs are kept for seven days. At the time of the incident the stack was the usual: Rails 8.1 API-only, Postgres, Puma, and Kamal. The memory baseline came from the full Rails stack, not the app code.
+The service is a telemetry backend. Five services send metrics and logs over OTLP/HTTP. The app has three routes: `/up`, `/v1/metrics`, and `/v1/logs`, all in `config/routes.rb`. Metrics roll up into five-minute windows; logs are kept for seven days. The stack was standard: Rails 8.1 API-only, Postgres, Puma, and Kamal. The memory baseline came from the full Rails stack, not the app code.
 
-The deploy takes 70–80 seconds, and that is when both processes are resident. Under memory pressure it stretched to 200–300 seconds, and swap made the deploy slower still. Kamal's deploy timeout had to be raised to 180 seconds just to let the new container come up; in the worst case, it took longer than that and the new container was killed. One deploy froze the node, and I had to power-cycle it.
+The deploy takes 70–80 seconds, with both processes resident. Under memory pressure it stretched to 200–300 seconds, and swap made it slower still. Kamal's deploy timeout had to be raised to 180 seconds just to let the new container come up; in the worst case, it took longer and the new container was killed. One deploy froze the node, and I had to force a reboot.
 
-I assumed the Postgres container was most of the memory. I moved the database to SQLite to get rid of it; the deploy peak didn't move. The database wasn't the problem.
+I assumed the Postgres container was using most of the memory. I moved the database to SQLite to remove it; the deploy peak didn't move. The database wasn't the problem.
 
 I also turned on zram. It took some of the pressure off swap and made deploys less likely to freeze the node, but the real problem was still there: two Rails processes sharing a 1 GB node.
 
-The allocator wasn't the problem either: Rails 8.1's default Dockerfile already preloads jemalloc.
+The allocator wasn't the problem either. Rails 8.1's default Dockerfile already preloads jemalloc.
 
-The full Rails stack was the problem. One process was already about 175 MB at steady state, and the new one's boot peak was higher. A deploy had to hold both. On a 1 GB node, there was no lever left to pull.
+The full Rails stack was the problem. One process was already about 175 MB at steady state, and the new process peaked higher during boot. A deploy had to fit both. On a 1 GB node, I couldn't find anything left to tune.
 
 Rust was the obvious answer. I had already ported another service to Rust, and it worked. I didn't port this one. This post is about why, and what I built instead.
 
