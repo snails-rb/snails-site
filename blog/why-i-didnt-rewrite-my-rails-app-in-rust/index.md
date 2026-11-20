@@ -63,11 +63,11 @@ pub async fn show(
 
 The action is three lines because the rest lives elsewhere: auth is a `before_action` on the base controller, `find_by!` raises `RecordNotFound` and the base controller turns it into a 404, and the JSON is a jbuilder view. The Rust handler carries all of it: the auth call, the pool, the error mapping, the lookup, the 404, and the JSON helper. An agent wrote this handler. It's correct, typed, and explicit. It's also more code to read than the Rails action it replaces. The agent can produce it faster than I can read it.
 
-I could read it. I didn't want to pay that cost every time I opened the file, and I found myself paying it less and less.
+I could read it. I didn't want to pay that cost every time I opened the file.
 
 That left more of the decisions to the agent: error handling, security boundaries, cost trade-offs. I use coding agents, but I run this service. At 3 a.m., I need to know what the code decided. Reading is how I debug, judge the agent's fix, and catch a regression.
 
-That's the cost I feel every day. The bigger cost is that review doesn't scale: Rust gives me more code per behavior, and an agent writes more of it, so the review bill grows faster than the feature bill. In a codebase an agent writes, that's the wrong trade.
+One handler is fine. But an agent writes more code than I can review, and Rust gives it more code per behavior. I read less. Then I stopped reading. The service still ran, but I couldn't explain what it would do next. It had become a black box. That was the bigger problem.
 
 Rust worked, but I didn't want to own it. I wanted the memory drop and code I could keep reading.
 
