@@ -40,6 +40,16 @@ function htmlFiles(dir) {
   });
 }
 
+function xmlText(text) {
+  // The feed escapes XML text, so compare the escaped title.
+  return String(text)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&apos;');
+}
+
 function metaContent(html, name) {
   const match = html.match(new RegExp(`<meta name="${name}" content="([^"]*)"`));
   if (!match) return null;
@@ -279,7 +289,7 @@ test('the feed carries every published post with absolute links', () => {
       xml.includes(`<pubDate>${new Date(`${post.date}T00:00:00Z`).toUTCString()}</pubDate>`),
       `${post.slug} date missing from feed`,
     );
-    assert.ok(xml.includes(`<title>${post.title}</title>`), `${post.slug} title missing`);
+    assert.ok(xml.includes(`<title>${xmlText(post.title)}</title>`), `${post.slug} title missing`);
   }
   if (posts.length > 0) {
     assert.ok(

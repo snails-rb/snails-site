@@ -133,7 +133,7 @@ That is the only reason I built Snails. I want Ruby and Rails to keep being usef
 
 ## For Ruby and Rails developers
 
-Snails is a working framework, not a prototype. We have migrated an existing Rails app and run new apps in production. The [benchmark](https://github.com/snails-rb/snails-benchmark) shows about 3× the throughput of Rails in cluster mode, with 10× or more peak-memory savings under load. In production, the migrated app runs the full application on a 512 MB micro server — and might even fit on a 128 MB box — while the same Rails app could not run at 512 MB without being OOM-killed. The base design is validated in use. It is still at 1.0, with more improvements and features planned.
+I built a working framework, not a prototype. I have migrated an existing Rails app and run new apps in production. The [benchmark](https://github.com/snails-rb/snails-benchmark) shows about 3× the throughput of Rails in cluster mode and 10× or more peak-memory savings under load. Those are benchmark numbers; the [field report](/blog/why-i-didnt-rewrite-my-rails-app-in-rust/) measures the production node at steady state. In production, the migrated app runs the full application on a 1 GB node. 512 MB is the next target, not yet verified. The base design is validated in use. 1.0 was the first stable release; the project is on 1.x now. 2.0 and 3.0 will keep the same conventions.
 
 The next question is whether it fits the way other Ruby and Rails developers work. I would like to hear from Ruby and Rails developers: what you would try, what you would change, and what is missing. Interest, feedback, and ideas are the next step. The source is open, and the discussion is open. Open a [discussion](https://github.com/snails-rb/snails/discussions) or send an [issue](https://github.com/snails-rb/snails/issues) with the Rails convention you would miss.
 
@@ -146,6 +146,7 @@ The next question is whether it fits the way other Ruby and Rails developers wor
 - [Testing](/manual/testing/)
 - [Concurrency](/manual/concurrency/)
 - [Performance](/manual/performance/)
+- [Why I didn't rewrite my Rails app in Rust](/blog/why-i-didnt-rewrite-my-rails-app-in-rust/) — a field report on one app's version of this trade.
 - [Snails benchmark](https://github.com/snails-rb/snails-benchmark)
 - [Spinel](https://github.com/matz/spinel)
 - [Rails 7 release notes](https://rubyonrails.org/2021/12/15/Rails-7-fulfilling-a-vision)

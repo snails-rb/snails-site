@@ -11,7 +11,7 @@
 // lives in `src/styles/tokens.css` next to the rest of the site's colours, so
 // the rendered HTML never carries a hex value.
 //
-// Only the grammars the manual actually fences are loaded. An unknown fence
+// Only the grammars the content fences are loaded. An unknown fence
 // language fails the build rather than rendering an unhighlighted block: a
 // chapter that says `go` would otherwise look like a deliberate choice to
 // skip colour instead of a missing grammar.
@@ -19,11 +19,13 @@
 import { createHighlighterCoreSync } from 'shiki/core';
 import { createJavaScriptRegexEngine } from 'shiki/engine/javascript';
 // The individual grammar and theme entries rather than the full bundle: the
-// build needs four grammars, and the bundle would carry every language.
+// build needs only the grammars the content uses, and the bundle would carry
+// every language.
 // `.mjs` is shiki's own export map (`./*` → `./dist/*`), so shiki stays the
 // single declared dependency.
 import dracula from 'shiki/themes/dracula.mjs';
 import ruby from 'shiki/langs/ruby.mjs';
+import rust from 'shiki/langs/rust.mjs';
 import shellscript from 'shiki/langs/shellscript.mjs';
 import sql from 'shiki/langs/sql.mjs';
 import toml from 'shiki/langs/toml.mjs';
@@ -33,6 +35,7 @@ import toml from 'shiki/langs/toml.mjs';
 // or a session transcript) without pretending to colour it.
 const GRAMMARS = {
   ruby,
+  rust,
   sh: shellscript,
   sql,
   toml,
