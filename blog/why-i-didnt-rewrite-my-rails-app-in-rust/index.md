@@ -8,7 +8,7 @@ author: Rinn
 
 *Disclosure: I'm the author of Snails, the framework this post is about. The numbers are from my own deploys, not a lab.*
 
-In October, a deploy brought my Rails API service down. The app was a stock Rails API app on a 1 GB node with 951 MB usable, running a single Puma process, not a cluster. Rails starts from a high memory baseline: the app process alone was about 175 MB, and with Postgres the node was using 504 MB of 951 MB. Kamal starts the new container before it stops the old one, so during boot the node holds two Rails processes. The new process's boot peak was higher than its steady 175 MB. With the old one still serving, the node ran out of headroom and started swapping. I didn't chase allocator tuning: the node has to hold two full Rails stacks during a deploy, and that is the constraint I wanted to remove.
+In October, a deploy brought my Rails API service down. The app was a stock Rails API app on a 1 GB node with 951 MB usable, running a single Puma process, not a cluster. Rails starts from a high memory baseline: the app process alone was about 175 MB, and with Postgres the node was using 504 MB of 951 MB. Kamal starts the new container before it stops the old one, so during boot the node holds two Rails processes. The new process's boot peak was higher than its steady 175 MB. With the old one still serving, the node ran out of headroom and started swapping. Rails 8.1's default Dockerfile already preloads jemalloc, so the deploy failure wasn't an allocator problem. The node has to hold two full Rails stacks during a deploy, and that is the constraint I wanted to remove.
 
 Rust was the obvious answer. I had already ported another service to Rust, and it worked. I didn't port this one. This post is about why, and what I built instead.
 
@@ -24,9 +24,11 @@ I also turned on zram. It took some of the pressure off swap and made deploys le
 
 The target was the free-tier minimum. Amazon Free Tier and Oracle Always Free both offer a 1 GB option, and that was the box I wanted the service to run on. A 2 GB node would have fixed the deploy: the two Rails processes would have had room to overlap, and I could have run Puma in cluster mode. That's the obvious answer.
 
-I didn't take it because it would have answered the wrong question. I had already ported a Rails job worker to a Rust microservice. The Rails job container, one process with the full stack loaded, used about 360 MB; the Rust service that replaced it used about 2 MB. If the Rust service does the same job in 2 MB, why use Rails? I couldn't answer that, and I didn't want to keep using Rails without an answer. A 2 GB node would have shown that Rails can run in 2 GB. It wouldn't have shown that Rails needs 2 GB: the premise I was trying to disprove. It would have hidden the question, not answered it.
+Cost wasn't the point. Performance was. The bigger node would have solved the deploy by adding memory, not by making Rails need less of it. I wanted to know whether the conventions could survive on the same 1 GB hardware as the Rust service.
 
-Cost wasn't the point. A framework that needs more than the smallest free-tier node isn't usable for this class of service.
+I had ported a Rails job worker to a Rust microservice. The Rails job container, one process with the full stack loaded, used about 360 MB; the Rust service that replaced it used about 2 MB. If the Rust service does the same job in 2 MB, why use Rails? I couldn't answer that, and I didn't want to keep using Rails without an answer.
+
+A framework that needs more than the smallest free-tier node isn't usable for this class of service. But I didn't want to leave Rails. I wanted the conventions without the stack that made them expensive. That is the option the rest of this post is about.
 
 ## Rust, already shipped
 
