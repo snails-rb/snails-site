@@ -188,7 +188,7 @@ end
 ActiveJob.recurring(MetricsRollupPruneJob, schedule: "0 6 * * *")
 ```
 
-`ActiveJob::Base` is the Rails base class; the class-side `perform` is Snails'. Rails calls an instance method and offers `perform_later`; Snails calls the class directly, which is what the compiler needs. `ActiveJob.recurring` is one line in `config/environment.rb`.
+`ActiveJob::Base` is the Rails base class, but Snails declares every job in code. Rails 8's Solid Queue puts recurring tasks in `config/recurring.yml`; Snails keeps the schedule in Ruby code. The job API is three calls in the `ActiveJob` namespace: `ActiveJob.enqueue` for a one-off job, `ActiveJob.schedule` for a delayed one, and `ActiveJob.recurring` for a recurring one. The class-side `perform` is the job body.
 
 ### Tests
 
