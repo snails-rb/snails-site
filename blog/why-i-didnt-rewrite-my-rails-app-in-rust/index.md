@@ -1,35 +1,36 @@
 ---
 title: Why I didn't rewrite my Rails app in Rust
-description: A deploy took my 1 GB Rails API service down. Rust was the obvious answer, but it made the code heavier to read. I kept the Rails conventions, dropped the layers, and let coding agents write what used to be a gem. The result is native performance with the same conventions.
+description: A deploy brought my 1 GB Rails API service down. Rust was the obvious answer, but it made the code heavier to read. I kept the Rails conventions, dropped the layers, and let coding agents write what used to be a gem. The result is native performance with the same conventions.
 date: 2026-11-20
+updated: 2026-11-20
 author: Rinn
 ---
 
 *Disclosure: I'm the author of Snails, the framework this post is about. The numbers are from my own deploys, not a lab.*
 
-In October, a deploy took my Rails API service down. The app was a vanilla Rails API app on a 1 GB node that reported 951 MB usable. Rails has a high memory floor: the app process was already about 175 MB, and with Postgres the node was using 504 MB of 951 MB. Kamal starts the new container before it stops the old one, so while the new process boots the node holds two Rails processes. The second process's boot peak was higher than its steady 175 MB; with the old one still serving, the node ran out of headroom and started swapping.
+In October, a deploy brought my Rails API service down. The app was a stock Rails API app on a 1 GB node with 951 MB usable, running a single Puma process, not a cluster. Rails starts from a high memory baseline: the app process alone was about 175 MB, and with Postgres the node was using 504 MB of 951 MB. Kamal starts the new container before it stops the old one, so during boot the node holds two Rails processes. The new process's boot peak was higher than its steady 175 MB. With the old one still serving, the node ran out of headroom and started swapping. I didn't chase allocator tuning: the node has to hold two full Rails stacks during a deploy, and that is the constraint I wanted to remove.
 
 Rust was the obvious answer. I had already ported another service to Rust, and it worked. I didn't port this one. This post is about why, and what I built instead.
 
-The service is a telemetry backend. Five services send metrics and logs over OTLP/HTTP. The app has three routes: `/up`, `/v1/metrics`, and `/v1/logs`, all in `config/routes.rb`. Metrics roll up into five-minute windows; logs are kept for seven days. At the time of the incident the stack was the usual one: Rails 8.1 API-only, Postgres, Puma, and Kamal. The full Rails stack, not the app code, set the memory floor.
+The service is a telemetry backend. Five services send metrics and logs over OTLP/HTTP. The app has three routes: `/up`, `/v1/metrics`, and `/v1/logs`, all in `config/routes.rb`. Metrics roll up into five-minute windows; logs are kept for seven days. At the time of the incident the stack was the usual: Rails 8.1 API-only, Postgres, Puma, and Kamal. The memory baseline came from the full Rails stack, not the app code.
 
-The deploy takes 70–80 seconds, and that is when both processes are resident. Under memory pressure it stretched to 200–300 seconds, and swap made the deploy slower still. Kamal's deploy timeout had to be raised to 180 seconds just to let the new container come up; in the worst deploy, it took longer than that and the new container was stopped. One deploy froze the node, and I had to power-cycle it.
+The deploy takes 70–80 seconds, and that is when both processes are resident. Under memory pressure it stretched to 200–300 seconds, and swap made the deploy slower still. Kamal's deploy timeout had to be raised to 180 seconds just to let the new container come up; in the worst case, it took longer than that and the new container was killed. One deploy froze the node, and I had to power-cycle it.
 
 I assumed the Postgres container was most of the memory. I moved the database to SQLite to get rid of it; the deploy peak didn't move. The database wasn't the problem.
 
-I also turned on zram. It took some pressure off swap and made deploys less likely to freeze the node, but the real problem was still there: two Rails processes sharing a 1 GB node.
+I also turned on zram. It took some of the pressure off swap and made deploys less likely to freeze the node, but the real problem was still there: two Rails processes sharing a 1 GB node.
 
 ## Why not a bigger node?
 
 The target was the free-tier minimum. Amazon Free Tier and Oracle Always Free both offer a 1 GB option, and that was the box I wanted the service to run on. A 2 GB node would have fixed the deploy: the two Rails processes would have had room to overlap, and I could have run Puma in cluster mode. That's the obvious answer.
 
-I didn't take it because it would have answered the wrong question. I had already ported a Rails job worker to a Rust microservice. The Rails worker used about 360 MB; the Rust worker used about 2 MB. If a Rust worker does the same job in 2 MB, why use Rails? I couldn't answer that, and I didn't want to keep using Rails without an answer. A 2 GB node would have shown that Rails can run in 2 GB. It wouldn't have shown that Rails needs 2 GB — the premise I was trying to disprove. It would have hidden the question, not answered it.
+I didn't take it because it would have answered the wrong question. I had already ported a Rails job worker to a Rust microservice. The Rails job container, one process with the full stack loaded, used about 360 MB; the Rust service that replaced it used about 2 MB. If the Rust service does the same job in 2 MB, why use Rails? I couldn't answer that, and I didn't want to keep using Rails without an answer. A 2 GB node would have shown that Rails can run in 2 GB. It wouldn't have shown that Rails needs 2 GB: the premise I was trying to disprove. It would have hidden the question, not answered it.
 
-The price wasn't the point. A framework that needs more than the smallest free-tier node isn't usable for this class of service.
+Cost wasn't the point. A framework that needs more than the smallest free-tier node isn't usable for this class of service.
 
 ## Rust, already shipped
 
-The port was for another Rails service, a smaller mobile API. It covered the API handlers and a job worker. The job worker is where I measured the memory: the Rails worker used about 360 MB, and the Rust microservice that replaced it used about 2 MB, on the same 1 GB node. It's one data point, not a benchmark. But the gap was real.
+The port was for another Rails service, a smaller mobile API. It covered the API handlers and a job worker. The job worker is where I measured the memory: about 360 MB for the Rails job container, about 2 MB for the Rust service that replaced it, on the same 1 GB node. It's one data point, not a benchmark. But the gap was real.
 
 The port did what I wanted. If memory were the only goal, I would have stopped there.
 
@@ -70,11 +71,11 @@ pub async fn show(
 
 The action is three lines because the rest lives elsewhere: auth is a `before_action` on the base controller, `find_by!` raises `RecordNotFound` and the base controller turns it into a 404, and the JSON is a jbuilder view. The Rust handler carries all of it: the auth call, the pool, the error mapping, the lookup, the 404, and the JSON helper. An agent wrote this handler. It's correct, typed, and explicit. It's also more code to read than the Rails action it replaces. The agent can produce it faster than I can read it.
 
-I could read it. I didn't want to pay that cost every time I opened the file — and I found myself paying it less and less.
+I could read it. I didn't want to pay that cost every time I opened the file, and I found myself paying it less and less.
 
-That left more of the decisions — error handling, security boundaries, cost trade-offs — to the agent, with less of my review. I use coding agents, but I run this service. At 3 a.m., I need to know what the code decided. Reading is how I debug, judge the agent's fix, and catch a regression.
+That left more of the decisions to the agent: error handling, security boundaries, cost trade-offs. I use coding agents, but I run this service. At 3 a.m., I need to know what the code decided. Reading is how I debug, judge the agent's fix, and catch a regression.
 
-That's the cost I feel first. The bigger cost is review. Rust gives me more code to review for the same behavior, and review doesn't get cheaper when an agent writes more code. In a codebase an agent writes, that's the wrong trade.
+That's the cost I feel every day. The bigger cost is that review doesn't scale: Rust gives me more code per behavior, and an agent writes more of it, so the review bill grows faster than the feature bill. In a codebase an agent writes, that's the wrong trade.
 
 Rust worked, but I didn't want to own it. I wanted the memory drop and code I could keep reading.
 
@@ -84,19 +85,21 @@ I tried [Roundhouse](https://rubys.github.io/roundhouse/) first. It's Sam Ruby's
 
 Roundhouse treats the Rails app as the source. It analyzes the app, builds a typed intermediate representation, and emits a standalone project for a target. The Ruby/Spinel target compiles the app and the Rails framework into one binary. The framework is compiled, not removed, so the Rails stack comes with it. The output is regenerated, not edited: the Rails app stays the source, and patching the output is a bug report, not a workflow.
 
-That path only covers the Rails constructs Roundhouse can model. An app outside that subset does not convert, and an app inside it is still a Rails app with a generated native build.
+That path only covers the Rails constructs Roundhouse can model. An app outside that subset won't convert, and an app inside it is still a Rails app with a generated native build.
 
 The binary worked: 2.8 MB on disk, about 19 MB RSS while serving requests. The memory goal was met. But the memory was the only goal it met.
 
 The Rails stack was still there. Roundhouse removed the CRuby process, not the layers: Active Record, the gems, and the Ruby runtime those layers need were still in the binary.
 
-The subset was still the limit. I wanted a framework that could be the path for other API apps, not a converter for the apps that happen to fit Roundhouse's constructs. A framework sets conventions any app can follow.
+The subset was still the limit.
 
-The source was still Rails. I wanted the app source to be the code I read and change — the controllers, forms, jobs, and tests below. With Roundhouse, the code that runs is a build artifact of the Rails app.
+The source was still Rails. I wanted the app source to be the code I read and change: the controllers, forms, jobs, and tests below. With Roundhouse, the binary is a build artifact of the Rails app.
 
 I wanted a framework for other API apps that kept the Rails conventions and removed the layers Rails added to make writing easier — Active Record, the HTML view layer, and the gems — along with the Ruby runtime those layers need.
 
-I could have contributed to Roundhouse instead. But a transpiler converts apps that already exist; a framework sets conventions for apps you haven't written yet. I needed the second tool, so I built Snails.
+I could have contributed to Roundhouse instead. But a transpiler converts apps that already exist; I needed a framework for apps I hadn't written yet. So I built Snails.
+
+The memory was about the same as Roundhouse's. The difference was that the code I was reading was the code I was running.
 
 ## Snails
 
@@ -181,7 +184,7 @@ end
 ActiveJob.recurring(MetricsRollupPruneJob, schedule: "0 6 * * *")
 ```
 
-`ActiveJob::Base` is the Rails base class; the class-side `perform` is Snails's. Rails calls an instance method and offers `perform_later`; Snails calls the class directly, which is what the compiler needs. `ActiveJob.recurring` is one line in `config/environment.rb`.
+`ActiveJob::Base` is the Rails base class; the class-side `perform` is Snails'. Rails calls an instance method and offers `perform_later`; Snails calls the class directly, which is what the compiler needs. `ActiveJob.recurring` is one line in `config/environment.rb`.
 
 ### Tests
 
@@ -201,9 +204,9 @@ That's where the Rails model convention ends. The model is a plain `Sqlx::Base` 
 
 ## What it cost
 
-Active Record was the biggest change. I didn't have associations or callbacks in this app, but I had relation chains and validations. Models are plain classes now. Reads and writes go through Sqlx, the framework's SQL API. There's no relation chain to build the SQL for you, so you write more of it. The bigger job was the write path: validation, batching, and the derived tables are now explicit steps.
+Active Record was the biggest change. I didn't have associations or callbacks in this app, but I used relation chaining and validations. Models are plain classes now. Reads and writes go through Sqlx, the framework's SQL API. There's no relation API to build the SQL for you, so you write more SQL by hand. The bigger job was the write path: validation, batching, and the derived tables are now explicit steps.
 
-Spinel was the other cost. While I was building Snails, I filed more than twenty Spinel issues: compiler bugs, missing constants, and cases where the emitted code didn't match the source. The hard part was doing both at once: debugging the compiler, filing issues, waiting for fixes, and building the framework. Spinel is much more stable now and usable in production, but it is not finished. The issues are in the [Spinel issue tracker](https://github.com/matz/spinel/issues?q=author%3Akslrinn).
+Spinel was the other cost. While I was building Snails, I filed more than twenty Spinel issues: compiler bugs, missing constants, and cases where the emitted code didn't match the source. The hard part was doing both at once: debugging the compiler, filing issues, waiting for fixes, and building the framework. Spinel is much more stable now and production-ready, but it is not finished. The issues are in the [Spinel issue tracker](https://github.com/matz/spinel/issues?q=author%3Akslrinn).
 
 ### Write path
 
@@ -253,33 +256,33 @@ The Rails baseline was about 175 MB for the app process and 504 MB on the node. 
 | Database | Postgres container | SQLite in the app |
 | Server | one Puma process | one native process |
 
-The app process dropped by about 155 MB. The node's used memory dropped by 142 MB, and available memory rose by the same amount. The node also runs a query agent and the proxy now, so its memory use fell by less than the app process's. The database moved from a Postgres container to SQLite in the app. That change shows up in the node's memory, not in the app process.
+The app process dropped by about 155 MB. The node's used memory dropped by 142 MB, and available memory rose by the same amount. The node also runs a query agent and the proxy now, so its memory use fell by less than the app process did. The database moved from a Postgres container to SQLite in the app. That change shows up in the node's memory, not in the app process.
 
-The Rails baseline is from the October deploy; the Snails numbers are from the production node now. The current numbers are steady-state measurements: process RSS for the app, `free -m` for the node, and `ls -lh` for the binary. This is one service, not a benchmark.
+The Rails baseline is from the October deploy. The Snails numbers are from the production node now. The current numbers are steady-state measurements: process RSS for the app, `free -m` for the node, and `ls -lh` for the binary. This is one service, not a benchmark.
 
 Throughput is a separate question. The [snails-benchmark](https://github.com/snails-rb/snails-benchmark) repo has a measurement on `/up` against Rails in cluster mode, with the method and raw results.
 
 The server is one native process, multi-threaded, across all cores: no worker processes, no GVL.
 
-Rails conventions, native performance. The code shows one; the numbers show the other. They're not a trade; the trade is in the features I gave up.
+Rails conventions, native performance. The code shows the first; the numbers show the second. Neither is the trade. The trade is in the features I gave up.
 
 ## The trade-off
 
-The obvious trade is Active Record, gems, and HTML views. For an API app, views are already out of scope. The real trade is the dependencies themselves: the ORM, the web server, the cron parser, the validation library.
+The obvious trade is Active Record, gems, and HTML views. For an API app, views are already out of scope. The real trade is the dependencies themselves: Active Record, the web server, the cron parser, the validation library.
 
-A few years ago, that would have sounded insane. Drop gem compatibility? Write your own web server and cron parser? You'd be rebuilding a decade of work. Coding agents change the math. They can write the missing pieces, and you can read them. Snails is the proof: the web server, the cron parser, and the rest are implemented in the framework, as much as the framework needs. This app does the same: forms, SQL, jobs.
+A few years ago, that would have sounded insane. Drop gem compatibility? Write your own web server and cron parser? You'd be rebuilding a decade of work. Coding agents change the math. They can write the missing pieces, and you can read them. Snails is the proof: the web server, the cron parser, and the rest are implemented in the framework, only as much as it needs. The cron parser is one file: it accepts the five-field grammar the scheduler needs and rejects everything else at parse time. This app does the same: forms, SQL, jobs.
 
-That's the assumption Snails starts from: agents write the code, and developers read it. That assumption is what makes the trade possible. If the agent can write the web server, the cron parser, and the forms, I don't need a gem for them. I need code I can read.
+Snails starts from one assumption: agents write the code, and developers read it. That assumption is what makes the trade possible. If the agent can write the web server, the cron parser, and the forms, I don't need a gem for them. I need code I can read.
 
 That's why I didn't rewrite in Rust. Rust made the code I had to read heavier, not lighter. Snails keeps the Rails conventions and puts the explicit parts where I can read them. For this API app, that was the right trade.
 
 ## What would you not give up?
 
-The question for your app is not whether you can live without Active Record. It's whether you're willing to own the code that used to be a gem. Would you remove the ORM, cut the external dependencies, and write the pieces yourself?
+The question for your app is not whether you can live without Active Record. It's whether you're willing to own the code that used to be a gem. Would you remove Active Record, cut the external dependencies, and write the pieces yourself?
 
-If the answer is no, stay on Rails. The memory problem is real, but the trade is yours.
+If the answer is no, stay on Rails. The memory problem is real, but the choice is yours.
 
-Snails is at 1.x and stable. 2.0 and 3.0 will keep the same conventions.
+Snails is at 1.x, and the public API is stable. The conventions are the compatibility promise, and they won't change.
 
 If you try Snails and hit a wall, I want to know.
 
