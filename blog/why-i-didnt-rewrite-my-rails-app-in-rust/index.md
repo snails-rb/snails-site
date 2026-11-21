@@ -155,7 +155,23 @@ class MetricsController < ApplicationController
 end
 ```
 
-`ApplicationController`, `before_action`, and `def create` are standard Rails. The concerns and the `Sqlx::RecordInvalid` rescue are Snails-specific.
+`ApplicationController`, `before_action`, and `def create` are standard Rails. The concerns are plain Ruby modules — no `ActiveSupport::Concern`, no `included do` — so the controller registers the filters itself. The `Sqlx::RecordInvalid` rescue is Snails-specific.
+
+```ruby
+# app/controllers/concerns/bearer_auth.rb
+module BearerAuth
+  private
+
+  def authenticate_bearer!
+    account_id = account_id_from_bearer
+    if account_id.nil?
+      reject_unauthorized
+    else
+      @account_id = account_id
+    end
+  end
+end
+```
 
 ### Forms
 
