@@ -245,7 +245,7 @@ end
 
 The form validates each row. The model writes the raw rows and the two derived tables — the latest series and the five-minute window — in one transaction. The 500-row batches keep each statement under SQLite's bind limit. There are no callbacks; the refresh is a line in the method. The tests check the derived tables, so a forgotten refresh fails the suite.
 
-Removing Active Record costs more code. It also means the code is plain Ruby: no metaprogramming, no callback chain, no hidden side effects. Every step is in the method, where I can read it.
+Removing Active Record takes more code. The code is plain Ruby, though: no metaprogramming, no callback chains, no hidden side effects. The write steps are explicit in the method, in the order they run.
 
 ## What the numbers say
 
