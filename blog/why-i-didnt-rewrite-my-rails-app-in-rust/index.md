@@ -278,7 +278,7 @@ A few years ago, that would have sounded insane. Drop gem compatibility? Write y
 
 Snails starts from one assumption: agents write the code, and developers read it. That assumption is what makes the trade possible. If the agent can write the web server, the cron parser, and the forms, I don't need a gem for them. I need code I can read.
 
-That's why I didn't rewrite in Rust. Rust makes the request path explicit too. Snails keeps the Rails request path and puts the explicit code in the model, where I can read it. Rust made the code I had to read heavier, not lighter. For this API app, that was the right trade.
+Rust and Rails sit on opposite sides of the same trade. Rust's explicitness is a language-level advantage, and it is why the code is heavy to read. Rails optimized for the developer and accepted the performance cost. Snails is my attempt to take both sides: the Rails request path, an explicit model, and a smaller stack. Whether that balance holds beyond this app is the open question.
 
 ## What would you not give up?
 
