@@ -243,9 +243,9 @@ class MetricSample < Sqlx::Base
 end
 ```
 
-The form validates each row. The model writes the raw rows and the two derived tables — the latest series and the five-minute window — in one transaction. The 500-row batches keep each statement under SQLite's bind limit. There are no callbacks; the refresh is a line in the method, and you have to remember it. The tests check the derived tables, so a forgotten refresh fails the suite.
+The form validates each row. The model writes the raw rows and the two derived tables — the latest series and the five-minute window — in one transaction. The 500-row batches keep each statement under SQLite's bind limit. There are no callbacks; the refresh is a line in the method. The tests check the derived tables, so a forgotten refresh fails the suite.
 
-Snails isn't less explicit than Rails; it moves the explicitness to the model layer. The request path stays Rails-shaped, and the SQL is in the model layer, where I can read it. That's the trade I wanted. The conventions are what make an agent's output reviewable: I know where the route, the validation, and the SQL are. Rust makes every layer explicit, including the request path.
+Removing Active Record takes more code. The code is plain Ruby, though: no metaprogramming, no callback chains, no hidden side effects. The write steps are explicit in the method, in the order they run.
 
 ## What the numbers say
 
@@ -278,7 +278,7 @@ A few years ago, that would have sounded insane. Drop gem compatibility? Write y
 
 Snails starts from one assumption: agents write the code, and developers read it. That assumption is what makes the trade possible. If the agent can write the web server, the cron parser, and the forms, I don't need a gem for them. I need code I can read.
 
-That's why I didn't rewrite in Rust. Rust made the code I had to read heavier, not lighter. Snails keeps the Rails conventions and puts the explicit parts where I can read them. For this API app, that was the right trade.
+That's why I didn't rewrite in Rust. Rust and Rails sit at opposite ends of the same trade-off. Rust's explicitness is built into the language, and that is an advantage. It is also why the code is heavy to read. Rails optimized for the developer and accepted the performance cost. Snails is my attempt to take the best of both: the Rails conventions, an explicit model, and native performance. Whether that balance holds beyond this app is the open question.
 
 ## What would you not give up?
 
