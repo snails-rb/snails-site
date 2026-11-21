@@ -107,7 +107,7 @@ The memory was about the same as Roundhouse's. The difference was that the code 
 
 ## Snails
 
-Snails is a Rails-like framework for API-only Ruby apps. It keeps the Rails conventions and compiles the app, the framework, and the HTTP server into one native binary with Spinel. The app is still Ruby source. There is no generated source: the files you write are the files the compiler reads. There is no Ruby VM or Rails stack at runtime. It has no gem dependencies. The [Snails Design](/blog/the-snails-design/) makes the argument; this post is the test.
+Snails is a Rails-like framework for API-only Ruby apps. It keeps the Rails conventions and compiles the app, the framework, and the HTTP server into one native binary with Spinel. The app is still Ruby source. There is no transpiled source: the files you write are the files the compiler reads. There is no Ruby VM or Rails stack at runtime. It has no gem dependencies. The [Snails Design](/blog/the-snails-design/) makes the argument; this post is the test.
 
 ## What survived
 
@@ -128,9 +128,11 @@ module Snails
     end
   end
 end
+
+RouteHelpers.metrics_path # "/v1/metrics"
 ```
 
-The route table uses the same `get`/`resources` helpers as Rails, but the rows are a plain array of controller classes and actions, not `Rails.application.routes.draw`. The table is a plain list because the compiler needs a static table to generate the route helpers; there is no `draw` block to run at boot.
+The route table uses the same `get`/`resources` helpers as Rails, but the rows are a plain array of controller classes and actions, not `Rails.application.routes.draw`. The table is a plain list because the route helpers are generated from it at build time, not from a `draw` block at boot.
 
 ### Controllers
 
@@ -151,9 +153,23 @@ class MetricsController < ApplicationController
     reject_ingest("invalid_rows", :unprocessable_content, rows.size, e.record.errors.join(", "))
   end
 end
+
+# app/controllers/concerns/bearer_auth.rb
+module BearerAuth
+  private
+
+  def authenticate_bearer!
+    account_id = account_id_from_bearer
+    if account_id.nil?
+      reject_unauthorized
+    else
+      @account_id = account_id
+    end
+  end
+end
 ```
 
-`ApplicationController`, `before_action`, and `def create` are standard Rails. The concerns and the `Sqlx::RecordInvalid` rescue are Snails-specific.
+`ApplicationController`, `before_action`, and `def create` are standard Rails. The concerns are plain Ruby modules: no `ActiveSupport::Concern`, no `included do`; the controller registers the filters itself. The `Sqlx::RecordInvalid` rescue is Snails-specific.
 
 ### Forms
 
@@ -171,7 +187,7 @@ class MetricSampleForm < Snails::Form
 end
 ```
 
-The `validates` DSL is standard Rails validation. The form subclasses `Snails::Form` instead of including `ActiveModel::Model`.
+The `validates` DSL is standard Rails validation. Rails keeps those rules on the Active Record model; Snails puts them in a form. The form validates input, and the `Sqlx` model writes rows.
 
 ### Jobs
 
@@ -202,17 +218,46 @@ class MetricsIngestTest < Snails::Harness::IntegrationTest
 end
 ```
 
-The test sends a real HTTP request and reads the table. The assertions are standard Rails integration-test assertions; the harness is `Snails::Harness::IntegrationTest`.
+The test sends a real HTTP request and reads the table. The assertions are standard Rails integration-test assertions. The harness resets the database tables and runs `setup` before each case.
 
-That's where the Rails model convention ends. The model is a plain `Sqlx::Base` class, and the write path below is the code that replaced Active Record.
+Routes, controllers, forms, jobs, and tests still use Rails conventions. The model layer does not: it is a plain `Sqlx::Base` class.
 
 ## What it cost
 
-Active Record was the biggest change. I didn't have associations or callbacks in this app, but I used relation chaining and validations. Models are plain classes now. Reads and writes go through Sqlx, the framework's SQL API. There's no relation API to build the SQL for you, so you write more SQL by hand. The bigger job was the write path: validation, batching, and the derived tables are now explicit steps.
+Active Record was the biggest change. I didn't use associations or callbacks in this app, but I did use relation chaining and validations. Models are plain `Sqlx::Base` classes, and reads and writes go through `Sqlx`, the framework's SQL API. The cost was real: more code, not harder code.
 
-Spinel was the other cost. While I was building Snails, I filed more than twenty Spinel issues: compiler bugs, missing constants, and cases where the emitted code didn't match the source. The hard part was doing both at once: debugging the compiler, filing issues, waiting for fixes, and building the framework. Spinel is much more stable now and production-ready, but it is not finished. The issues are in the [Spinel issue tracker](https://github.com/matz/spinel/issues?q=author%3Akslrinn).
+### Read path
+
+The read path is the common case. Rails relation chaining builds the SQL from calls like `where`, `order`, `offset`, and `limit`:
+
+```ruby
+# Rails
+ApiToken.where(account_id: id).order(id: :desc).offset(40).limit(20)
+
+# Snails
+ApiToken.fetch_many({ account_id: id }, order: :desc, offset: 40, limit: 20)
+```
+
+Snails has a fixed set of finders for common queries. A query that groups or joins has no finder. It is SQL:
+
+```ruby
+# Rails
+MetricSample.where(account_id: id).group(:service).count
+# => { "api" => 120, "worker" => 80 }
+
+# Snails
+MetricSample.rows_by_sql(
+  "SELECT service, COUNT(*) AS total FROM metric_samples WHERE account_id = ? GROUP BY service",
+  [id]
+)
+# => [{ "service" => "api", "total" => 120 }, { "service" => "worker", "total" => 80 }]
+```
+
+The second query is longer; it is plain SQL with bound values.
 
 ### Write path
+
+Validation moved to forms. The write path was the bigger job: validation, batching, and the derived tables are now explicit steps.
 
 This is the write path for one batch:
 
@@ -243,9 +288,13 @@ class MetricSample < Sqlx::Base
 end
 ```
 
-The form validates each row. The model writes the raw rows and the two derived tables — the latest series and the five-minute window — in one transaction. The 500-row batches keep each statement under SQLite's bind limit. There are no callbacks; the refresh is a line in the method. The tests check the derived tables, so a forgotten refresh fails the suite.
+The form validates each row. The model writes the raw rows and the two derived tables, the latest series and the five-minute window, in one transaction. The 500-row batches keep each statement under SQLite's bind limit. There are no callbacks; the refresh is a line in the method. The tests check the derived tables, so a forgotten refresh fails the suite.
 
-Removing Active Record takes more code. The code is plain Ruby, though: no metaprogramming, no callback chains, no hidden side effects. The write steps are explicit in the method, in the order they run.
+Removing Active Record takes more code. The code is plain Ruby: no metaprogramming, no callback chains, no hidden side effects. The write steps are explicit in the method, in the order they run. A Rails version without callbacks would look much the same; the Snails-specific cost is the form and the plain model layer.
+
+### Spinel
+
+Spinel was the other cost. While I was building Snails, I filed more than twenty Spinel issues: compiler bugs, missing constants, and cases where the emitted code didn't match the source. The hard part was doing both at once: debugging the compiler, filing issues, waiting for fixes, and building the framework. Most fixes landed the same day. Spinel is much more stable now and production-ready; it is still improving every day. The issues are in the [Spinel issue tracker](https://github.com/matz/spinel/issues?q=author%3Akslrinn).
 
 ## What the numbers say
 
@@ -264,9 +313,7 @@ The app process dropped by about 155 MB. The node's used memory dropped by 142 M
 
 The Rails baseline is from the October deploy. The Snails numbers are from the production node now. The current numbers are steady-state measurements: process RSS for the app, `free -m` for the node, and `ls -lh` for the binary. This is one service, not a benchmark.
 
-Throughput is a separate question. The [snails-benchmark](https://github.com/snails-rb/snails-benchmark) repo has a measurement on `/up` against Rails in cluster mode, with the method and raw results.
-
-The server is one native process, multi-threaded, across all cores: no worker processes, no GVL.
+Throughput is a separate question. The server is one native process, multi-threaded, across all cores: no worker processes, no GVL. The [snails-benchmark](https://github.com/snails-rb/snails-benchmark) repo has a measurement on `/up` against Rails in cluster mode, with the method and raw results.
 
 Rails conventions, native performance. The code shows the first; the numbers show the second. Neither is the trade. The trade is in the features I gave up.
 
@@ -274,7 +321,7 @@ Rails conventions, native performance. The code shows the first; the numbers sho
 
 The obvious trade is Active Record, gems, and HTML views. For an API app, views are already out of scope. The real trade is the dependencies themselves: Active Record, the web server, the cron parser, the validation library.
 
-A few years ago, that would have sounded insane. Drop gem compatibility? Write your own web server and cron parser? You'd be rebuilding a decade of work. Coding agents change the math. They can write the missing pieces, and you can read them. Snails is the proof: the web server, the cron parser, and the rest are implemented in the framework, only as much as it needs. The cron parser is one file: it accepts the five-field grammar the scheduler needs and rejects everything else at parse time. This app does the same: forms, SQL, jobs.
+A few years ago, that would have sounded insane. Drop gem compatibility? Write your own web server and cron parser? You'd be rebuilding a decade of work. Coding agents change the math. They can write the code you'd otherwise get from a gem, and you can read it. Snails is the proof: the web server, the cron parser, and the rest are implemented in the framework, only as much as it needs. The cron parser is one file: it accepts the five-field grammar the scheduler needs and rejects everything else at parse time. The app does the same at its level: it implements what it needs instead of adding a gem.
 
 Snails starts from one assumption: agents write the code, and developers read it. That assumption is what makes the trade possible. If the agent can write the web server, the cron parser, and the forms, I don't need a gem for them. I need code I can read.
 
