@@ -220,7 +220,7 @@ end
 
 The test sends a real HTTP request and reads the table. The assertions are standard Rails integration-test assertions. The harness resets the database tables and runs `setup` before each case.
 
-That's where the Rails model convention ends. The model is a plain `Sqlx::Base` class, and the write path below is the code that replaced Active Record.
+Routes, controllers, forms, jobs, and tests still use Rails conventions. The model layer does not: it is a plain `Sqlx::Base` class.
 
 ## What it cost
 
