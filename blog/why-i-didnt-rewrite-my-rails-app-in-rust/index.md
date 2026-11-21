@@ -107,7 +107,7 @@ The memory was about the same as Roundhouse's. The difference was that the code 
 
 ## Snails
 
-Snails is a Rails-like framework for API-only Ruby apps. It keeps the Rails conventions and compiles the app, the framework, and the HTTP server into one native binary with Spinel. The app is still Ruby source. There is no generated source: the files you write are the files the compiler reads. There is no Ruby VM or Rails stack at runtime. It has no gem dependencies. The [Snails Design](/blog/the-snails-design/) makes the argument; this post is the test.
+Snails is a Rails-like framework for API-only Ruby apps. It keeps the Rails conventions and compiles the app, the framework, and the HTTP server into one native binary with Spinel. The app is still Ruby source. There is no transpiled source: the files you write are the files the compiler reads. There is no Ruby VM or Rails stack at runtime. It has no gem dependencies. The [Snails Design](/blog/the-snails-design/) makes the argument; this post is the test.
 
 ## What survived
 
@@ -128,9 +128,11 @@ module Snails
     end
   end
 end
+
+RouteHelpers.metrics_path # "/v1/metrics"
 ```
 
-The route table uses the same `get`/`resources` helpers as Rails, but the rows are a plain array of controller classes and actions, not `Rails.application.routes.draw`. The table is a plain list because the compiler needs a static table to generate the route helpers; there is no `draw` block to run at boot.
+The route table uses the same `get`/`resources` helpers as Rails, but the rows are a plain array of controller classes and actions, not `Rails.application.routes.draw`. The table is a plain list because the route helpers are generated from it at build time, not from a `draw` block at boot.
 
 ### Controllers
 
@@ -151,9 +153,23 @@ class MetricsController < ApplicationController
     reject_ingest("invalid_rows", :unprocessable_content, rows.size, e.record.errors.join(", "))
   end
 end
+
+# app/controllers/concerns/bearer_auth.rb
+module BearerAuth
+  private
+
+  def authenticate_bearer!
+    account_id = account_id_from_bearer
+    if account_id.nil?
+      reject_unauthorized
+    else
+      @account_id = account_id
+    end
+  end
+end
 ```
 
-`ApplicationController`, `before_action`, and `def create` are standard Rails. The concerns and the `Sqlx::RecordInvalid` rescue are Snails-specific.
+`ApplicationController`, `before_action`, and `def create` are standard Rails. The concerns are plain Ruby modules: no `ActiveSupport::Concern`, no `included do`; the controller registers the filters itself. The `Sqlx::RecordInvalid` rescue is Snails-specific.
 
 ### Forms
 
@@ -171,7 +187,7 @@ class MetricSampleForm < Snails::Form
 end
 ```
 
-The `validates` DSL is standard Rails validation. The form subclasses `Snails::Form` instead of including `ActiveModel::Model`.
+The `validates` DSL is standard Rails validation. Rails keeps those rules on the Active Record model; Snails puts them in a form. The form validates input, and the `Sqlx` model writes rows.
 
 ### Jobs
 
@@ -202,9 +218,9 @@ class MetricsIngestTest < Snails::Harness::IntegrationTest
 end
 ```
 
-The test sends a real HTTP request and reads the table. The assertions are standard Rails integration-test assertions; the harness is `Snails::Harness::IntegrationTest`.
+The test sends a real HTTP request and reads the table. The assertions are standard Rails integration-test assertions. The harness resets the database tables and runs `setup` before each case.
 
-That's where the Rails model convention ends. The model is a plain `Sqlx::Base` class, and the write path below is the code that replaced Active Record.
+Routes, controllers, forms, jobs, and tests still use Rails conventions. The model layer does not: it is a plain `Sqlx::Base` class.
 
 ## What it cost
 
@@ -243,7 +259,7 @@ class MetricSample < Sqlx::Base
 end
 ```
 
-The form validates each row. The model writes the raw rows and the two derived tables — the latest series and the five-minute window — in one transaction. The 500-row batches keep each statement under SQLite's bind limit. There are no callbacks; the refresh is a line in the method. The tests check the derived tables, so a forgotten refresh fails the suite.
+The form validates each row. The model writes the raw rows and the two derived tables, the latest series and the five-minute window, in one transaction. The 500-row batches keep each statement under SQLite's bind limit. There are no callbacks; the refresh is a line in the method. The tests check the derived tables, so a forgotten refresh fails the suite.
 
 Removing Active Record takes more code. The code is plain Ruby, though: no metaprogramming, no callback chains, no hidden side effects. The write steps are explicit in the method, in the order they run.
 
