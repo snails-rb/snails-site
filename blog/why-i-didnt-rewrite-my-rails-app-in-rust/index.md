@@ -91,9 +91,7 @@ The subset was still the limit.
 
 The source was still Rails. I wanted the app source to be the code I read and change: the controllers, forms, jobs, and tests below. With Roundhouse, the binary is a build artifact of the Rails app.
 
-I wanted a framework for other API apps that kept the Rails conventions and removed the layers Rails added to make writing easier — Active Record, the HTML view layer, and the gems — along with the Ruby runtime those layers need.
-
-I could have contributed to Roundhouse instead. But I wanted a framework, not a transpiler. So I created Snails.
+Contributing to Roundhouse wouldn't have given me what I wanted. I wanted a framework, not a transpiler: one for other API apps that kept the Rails conventions and removed the layers that rely on runtime metaprogramming — Active Record, the HTML view layer, and the gems. The compiler needs static code; those layers need the Ruby runtime. I wanted the app to run without it. So I created Snails.
 
 The memory was about the same as Roundhouse's. The difference was that the code I was reading was the code I was running.
 
