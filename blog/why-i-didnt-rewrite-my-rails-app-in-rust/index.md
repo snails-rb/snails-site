@@ -153,9 +153,7 @@ class MetricsController < ApplicationController
     reject_ingest("invalid_rows", :unprocessable_content, rows.size, e.record.errors.join(", "))
   end
 end
-```
 
-```ruby
 # app/controllers/concerns/bearer_auth.rb
 module BearerAuth
   private
