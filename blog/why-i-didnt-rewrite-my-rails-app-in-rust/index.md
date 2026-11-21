@@ -128,9 +128,11 @@ module Snails
     end
   end
 end
+
+RouteHelpers.metrics_path # "/v1/metrics"
 ```
 
-The route table uses the same `get`/`resources` helpers as Rails, but the rows are a plain array of controller classes and actions, not `Rails.application.routes.draw`. The table is a plain list because the compiler needs a static table to generate the route helpers; there is no `draw` block to run at boot.
+The route table uses the same `get`/`resources` helpers as Rails, but the rows are a plain array of controller classes and actions, not a `Rails.application.routes.draw` block. Rails builds its route set from that block when the app boots. Snails has no `draw` block to run, so it generates the route helpers in `gen/route_helpers.rb` from this table before every build — which is why the table has to be a static list.
 
 ### Controllers
 
