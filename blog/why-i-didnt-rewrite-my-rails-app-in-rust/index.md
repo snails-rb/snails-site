@@ -218,7 +218,7 @@ class MetricsIngestTest < Snails::Harness::IntegrationTest
 end
 ```
 
-The test sends a real HTTP request and reads the table. The assertions are standard Rails integration-test assertions; the harness is `Snails::Harness::IntegrationTest`.
+The test sends a real HTTP request and reads the table. The assertions are standard Rails integration-test assertions. The harness resets the database tables and runs `setup` before each case; every case starts from a known database.
 
 That's where the Rails model convention ends. The model is a plain `Sqlx::Base` class, and the write path below is the code that replaced Active Record.
 
