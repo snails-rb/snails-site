@@ -73,7 +73,7 @@ Rust worked, but I didn't want to own it. I wanted the memory drop and code I co
 
 The other obvious answer was a bigger node. A 2 GB node would have fixed the deploy: the two Rails processes would have had room to overlap, and I could have run Puma in cluster mode.
 
-The point wasn't cost. It was whether the stack could fit the smallest node. The bigger node would have solved the deploy by adding memory, not by making Rails need less of it. The Rust service already ran on 1 GB. The question was whether the Rails conventions could survive on the same hardware.
+Cost wasn't the point. Memory was. The bigger node would have solved the deploy by adding memory, not by making Rails need less of it. The Rust service already ran on 1 GB. The question was whether the Rails conventions could survive on the same hardware.
 
 A framework that needs more than the smallest free-tier node isn't usable for this class of service. That was the constraint I wasn't willing to give up. I wanted to keep the conventions inside it. That meant removing the stack that made them expensive to run.
 
