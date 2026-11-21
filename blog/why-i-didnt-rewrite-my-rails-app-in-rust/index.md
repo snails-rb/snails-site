@@ -187,7 +187,7 @@ class MetricSampleForm < Snails::Form
 end
 ```
 
-The `validates` DSL is standard Rails validation. The form subclasses `Snails::Form` instead of including `ActiveModel::Model`.
+The `validates` DSL is standard Rails validation. Rails keeps those rules on the Active Record model; Snails puts them in a form. The form validates input, and the `Sqlx` model writes rows.
 
 ### Jobs
 
