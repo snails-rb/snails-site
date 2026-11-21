@@ -107,7 +107,7 @@ The memory was about the same as Roundhouse's. The difference was that the code 
 
 ## Snails
 
-Snails is a Rails-like framework for API-only Ruby apps. It keeps the Rails conventions and compiles the app, the framework, and the HTTP server into one native binary with Spinel. The app is still Ruby source. There is no generated source: the files you write are the files the compiler reads. There is no Ruby VM or Rails stack at runtime. It has no gem dependencies. The [Snails Design](/blog/the-snails-design/) makes the argument; this post is the test.
+Snails is a Rails-like framework for API-only Ruby apps. It keeps the Rails conventions and compiles the app, the framework, and the HTTP server into one native binary with Spinel. The app is still Ruby source. There is no transpiled source: the files you write are the files the compiler reads. There is no Ruby VM or Rails stack at runtime. It has no gem dependencies. The [Snails Design](/blog/the-snails-design/) makes the argument; this post is the test.
 
 ## What survived
 
@@ -132,7 +132,7 @@ end
 RouteHelpers.metrics_path # "/v1/metrics"
 ```
 
-The route table uses the same `get`/`resources` helpers as Rails, but the rows are a plain array of controller classes and actions, not a `Rails.application.routes.draw` block. Rails builds its route set from that block when the app boots. Snails has no `draw` block to run, so it generates the route helpers in `gen/route_helpers.rb` from this table before every build — which is why the table has to be a static list.
+The route table uses the same `get`/`resources` helpers as Rails, but the rows are a plain array of controller classes and actions, not `Rails.application.routes.draw`. The table is a plain list because the route helpers are generated from it at build time, not from a `draw` block at boot.
 
 ### Controllers
 
