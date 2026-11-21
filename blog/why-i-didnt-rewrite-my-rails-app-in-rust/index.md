@@ -243,9 +243,9 @@ class MetricSample < Sqlx::Base
 end
 ```
 
-The form validates each row. The model writes the raw rows and the two derived tables — the latest series and the five-minute window — in one transaction. The 500-row batches keep each statement under SQLite's bind limit. There are no callbacks; the refresh is a line in the method, and you have to remember it. The tests check the derived tables, so a forgotten refresh fails the suite.
+The form validates each row. The model writes the raw rows and the two derived tables — the latest series and the five-minute window — in one transaction. The 500-row batches keep each statement under SQLite's bind limit. There are no callbacks; the refresh is a line in the method. The tests check the derived tables, so a forgotten refresh fails the suite.
 
-Snails isn't less explicit than Rails; it moves the explicitness to the model layer. The request path stays Rails-shaped, and the SQL is in the model layer, where I can read it. That's the trade I wanted. The conventions are what make an agent's output reviewable: I know where the route, the validation, and the SQL are. Rust makes every layer explicit, including the request path.
+Removing Active Record costs more code. It also means the code is plain Ruby: no metaprogramming, no callback chain, no hidden side effects. Every step is in the method, where I can read it.
 
 ## What the numbers say
 
@@ -276,9 +276,9 @@ The obvious trade is Active Record, gems, and HTML views. For an API app, views 
 
 A few years ago, that would have sounded insane. Drop gem compatibility? Write your own web server and cron parser? You'd be rebuilding a decade of work. Coding agents change the math. They can write the missing pieces, and you can read them. Snails is the proof: the web server, the cron parser, and the rest are implemented in the framework, only as much as it needs. The cron parser is one file: it accepts the five-field grammar the scheduler needs and rejects everything else at parse time. This app does the same: forms, SQL, jobs.
 
-Snails starts from one assumption: agents write the code, and developers read it. That assumption is what makes the trade possible. If the agent can write the web server, the cron parser, and the forms, I don't need a gem for them. I need code I can read.
+Snails starts from one assumption: agents write the code, and developers read it. That assumption is what makes the trade possible. If the agent can write the web server, the cron parser, and the forms, I don't need a gem for them. I need code I can read. The conventions are what make that review possible: I know where the route, the validation, and the SQL are.
 
-That's why I didn't rewrite in Rust. Rust made the code I had to read heavier, not lighter. Snails keeps the Rails conventions and puts the explicit parts where I can read them. For this API app, that was the right trade.
+That's why I didn't rewrite in Rust. Rust makes the request path explicit too. Snails keeps the Rails request path and puts the explicit code in the model, where I can read it. Rust made the code I had to read heavier, not lighter. For this API app, that was the right trade.
 
 ## What would you not give up?
 
