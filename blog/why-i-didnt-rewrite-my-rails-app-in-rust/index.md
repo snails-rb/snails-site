@@ -8,7 +8,7 @@ author: Rinn
 
 *Disclosure: I'm the author of Snails, the framework this post is about. The numbers are from my own deploys, not a lab.*
 
-In October, a deploy brought my Rails API service down. The app was a stock Rails API app on a 1 GB node with 951 MB usable, running a single Puma process, not cluster mode. Rails starts with a high memory footprint: the app process alone was about 175 MB, and with Postgres running, the node sat at 504 MB of 951 MB. Kamal starts the new container before it stops the old one. During a deploy, the node runs two Rails processes. The new process peaked higher during boot than its steady 175 MB. With the old process still serving, the node ran out of headroom and started swapping.
+In October, a deploy brought my Rails API service down. The app was a stock Rails API app on a 1 GB node with 951 MB usable, running a single Puma process, not cluster mode. Rails starts with a high memory footprint: the app process alone was about 175 MB, and with Postgres running, the node sat at 504 MB of 951 MB. Kamal starts the new container before it stops the old one, so during a deploy the node runs two Rails processes. The new process peaked higher during boot than its steady 175 MB. With the old process still serving, the node ran out of headroom and started swapping.
 
 The service is a telemetry backend. Five services send metrics and logs over OTLP/HTTP. The app has three routes: `/up`, `/v1/metrics`, and `/v1/logs`, all in `config/routes.rb`. Metrics roll up into five-minute windows; logs are kept for seven days. The stack was standard: Rails 8.1 API-only, Postgres, Puma, and Kamal. The memory baseline came from the full Rails stack, not the app code.
 
@@ -87,7 +87,7 @@ A framework that needs more than the smallest free-tier node isn't usable for th
 
 I tried [Roundhouse](https://rubys.github.io/roundhouse/) first. It's Sam Ruby's transpiler: it reads a Rails app as-is and emits a standalone project. One target is [Spinel](https://github.com/matz/spinel), Matz's ahead-of-time Ruby compiler.
 
-Roundhouse treats the Rails app as the source. It analyzes the app, builds a typed intermediate representation, and emits a standalone project for a target. The Ruby/Spinel target compiles the app and the Rails framework into one binary. The framework is compiled, not removed. The Rails stack comes with it. The output is regenerated, not edited: the Rails app stays the source, and patching the output is a bug report, not a workflow.
+Roundhouse treats the Rails app as the source. It analyzes the app, builds a typed intermediate representation, and emits a standalone project for a target. The Ruby/Spinel target compiles the app and the Rails framework into one binary. The framework is compiled, not removed, so the Rails stack comes with it. The output is regenerated, not edited: the Rails app stays the source, and patching the output is a bug report, not a workflow.
 
 That path only covers the Rails constructs Roundhouse can model. An app outside that subset won't convert, and an app inside it is still a Rails app with a generated native build.
 
@@ -169,7 +169,7 @@ module BearerAuth
 end
 ```
 
-`ApplicationController`, `before_action`, and `def create` are standard Rails. The concerns are plain Ruby modules: no `ActiveSupport::Concern`, no `included do`. The controller registers the filters itself. The `Sqlx::RecordInvalid` rescue is Snails-specific.
+`ApplicationController`, `before_action`, and `def create` are standard Rails. The concerns are plain Ruby modules: no `ActiveSupport::Concern`, no `included do`; the controller registers the filters itself. The `Sqlx::RecordInvalid` rescue is Snails-specific.
 
 ### Forms
 
@@ -224,7 +224,7 @@ That's where the Rails model convention ends. The model is a plain `Sqlx::Base` 
 
 ## What it cost
 
-Active Record was the biggest change. I didn't have associations or callbacks in this app, but I used relation chaining and validations. Models are plain classes now. Reads and writes go through Sqlx, the framework's SQL API. There's no relation API to build the SQL for you. You write more SQL by hand. The bigger job was the write path: validation, batching, and the derived tables are now explicit steps.
+Active Record was the biggest change. I didn't have associations or callbacks in this app, but I used relation chaining and validations. Models are plain classes now. Reads and writes go through Sqlx, the framework's SQL API. There's no relation API to build the SQL for you, so you write more SQL by hand. The bigger job was the write path: validation, batching, and the derived tables are now explicit steps.
 
 Spinel was the other cost. While I was building Snails, I filed more than twenty Spinel issues: compiler bugs, missing constants, and cases where the emitted code didn't match the source. The hard part was doing both at once: debugging the compiler, filing issues, waiting for fixes, and building the framework. Spinel is much more stable now and production-ready, but it is not finished. The issues are in the [Spinel issue tracker](https://github.com/matz/spinel/issues?q=author%3Akslrinn).
 
@@ -259,7 +259,7 @@ class MetricSample < Sqlx::Base
 end
 ```
 
-The form validates each row. The model writes the raw rows and the two derived tables, the latest series and the five-minute window, in one transaction. The 500-row batches keep each statement under SQLite's bind limit. There are no callbacks; the refresh is a line in the method. The tests check the derived tables; a forgotten refresh fails the suite.
+The form validates each row. The model writes the raw rows and the two derived tables, the latest series and the five-minute window, in one transaction. The 500-row batches keep each statement under SQLite's bind limit. There are no callbacks; the refresh is a line in the method. The tests check the derived tables, so a forgotten refresh fails the suite.
 
 Removing Active Record takes more code. The code is plain Ruby, though: no metaprogramming, no callback chains, no hidden side effects. The write steps are explicit in the method, in the order they run.
 
@@ -276,7 +276,7 @@ The Rails baseline was about 175 MB for the app process and 504 MB on the node. 
 | Database | Postgres container | SQLite in the app |
 | Server | one Puma process | one native process |
 
-The app process dropped by about 155 MB. The node's used memory dropped by 142 MB, and available memory rose by the same amount. The node also runs a query agent and the proxy now. Its memory use fell by less than the app process did. The database moved from a Postgres container to SQLite in the app. That change shows up in the node's memory, not in the app process.
+The app process dropped by about 155 MB. The node's used memory dropped by 142 MB, and available memory rose by the same amount. The node also runs a query agent and the proxy now, so its memory use fell by less than the app process did. The database moved from a Postgres container to SQLite in the app. That change shows up in the node's memory, not in the app process.
 
 The Rails baseline is from the October deploy. The Snails numbers are from the production node now. The current numbers are steady-state measurements: process RSS for the app, `free -m` for the node, and `ls -lh` for the binary. This is one service, not a benchmark.
 
