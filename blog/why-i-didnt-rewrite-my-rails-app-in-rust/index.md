@@ -65,7 +65,7 @@ I could read it. I didn't want to pay that cost every time I opened the file, an
 
 That left more of the decisions to the agent: error handling, security boundaries, cost trade-offs. I use coding agents, but I run this service. At 3 a.m., I need to know what the code decided. Reading is how I debug, judge the agent's fix, and catch a regression.
 
-The gap grew with every feature: an agent writes more code than I can review, and Rust gives it more code per behavior. Then I stopped reading. The service still ran, but I couldn't explain what it would do next. It had become a black box. That was the bigger problem.
+A small codebase is manageable. It grew faster than I could read: an agent writes more code than I can review, and Rust gives it more code per behavior. Then I stopped reading. The service still ran, but I couldn't explain what it would do next. It had become a black box. That was the bigger problem.
 
 Rust worked, but I didn't want to own it. I wanted the memory drop and code I could keep reading.
 
