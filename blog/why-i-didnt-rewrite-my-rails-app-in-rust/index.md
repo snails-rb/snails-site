@@ -59,21 +59,21 @@ pub async fn show(
 }
 ```
 
-The action is three lines because the rest lives elsewhere: auth is a `before_action` on the base controller, `find_by!` raises `RecordNotFound` and the base controller turns it into a 404, and the JSON is a jbuilder view. The Rust handler carries all of it: the auth call, the pool, the error mapping, the lookup, the 404, and the JSON helper. An agent wrote this handler. It's correct, typed, and explicit. It's also more code to read than the Rails action it replaces. The agent can produce it faster than I can read it.
+The Rails action is three lines because the framework carries the rest: auth, the 404, and the JSON. The Rust handler carries all of it. An agent wrote this handler. It's correct, typed, and explicit. It's also more code to read than the Rails action it replaces. The agent can produce it faster than I can read it.
 
 I could read it. I didn't want to pay that cost every time I opened the file, and I found myself paying it less and less.
 
 That left more of the decisions to the agent: error handling, security boundaries, cost trade-offs. I use coding agents, but I run this service. At 3 a.m., I need to know what the code decided. Reading is how I debug, judge the agent's fix, and catch a regression.
 
-That's the cost I feel every day. Reading a small codebase is manageable. The problem is how fast it grows: an agent writes more code than I can review, and Rust gives it more code per behavior. The gap grows with every feature. Then I stopped reading. The service still ran, but I couldn't explain what it would do next. It had become a black box. That was the bigger problem.
+A small codebase is manageable. It grew faster than I could read: an agent writes more code than I can review, and Rust gives it more code per behavior. Then I stopped reading. The service still ran, but I couldn't explain what it would do next. It had become a black box. That was the bigger problem.
 
 Rust worked, but I didn't want to own it. I wanted the memory drop and code I could keep reading.
 
 ## Why not a bigger node?
 
-The other obvious answer was a bigger node. Amazon Free Tier and Oracle Always Free both offer a 1 GB option, and that was the box I wanted the service to run on. A 2 GB node would have fixed the deploy: the two Rails processes would have had room to overlap, and I could have run Puma in cluster mode.
+The other obvious answer was a bigger node. A 2 GB node would have fixed the deploy: the two Rails processes would have had room to overlap, and I could have run Puma in cluster mode.
 
-Cost wasn't the point. Performance was. The bigger node would have solved the deploy by adding memory, not by making Rails need less of it. The Rust service already ran on 1 GB. The question was whether the Rails conventions could survive on the same hardware.
+Cost wasn't the point. Memory was. The bigger node would have solved the deploy by adding memory, not by making Rails need less of it. The Rust service already ran on 1 GB. The question was whether the Rails conventions could survive on the same hardware.
 
 A framework that needs more than the smallest free-tier node isn't usable for this class of service. That was the constraint I wasn't willing to give up. I wanted to keep the conventions inside it. That meant removing the stack that made them expensive to run.
 
@@ -81,9 +81,7 @@ A framework that needs more than the smallest free-tier node isn't usable for th
 
 I tried [Roundhouse](https://rubys.github.io/roundhouse/) first. It's Sam Ruby's transpiler: it reads a Rails app as-is and emits a standalone project. One target is [Spinel](https://github.com/matz/spinel), Matz's ahead-of-time Ruby compiler.
 
-Roundhouse treats the Rails app as the source. It analyzes the app, builds a typed intermediate representation, and emits a standalone project for a target. The Ruby/Spinel target compiles the app and the Rails framework into one binary. The framework is compiled, not removed, so the Rails stack comes with it. The output is regenerated, not edited: the Rails app stays the source, and patching the output is a bug report, not a workflow.
-
-That path only covers the Rails constructs Roundhouse can model. An app outside that subset won't convert, and an app inside it is still a Rails app with a generated native build.
+The Ruby/Spinel target compiles the app and the Rails framework into one binary. The Rails app stays the source and the output is regenerated, not edited; patching the output is a bug report, not a workflow. That path only covers the Rails constructs Roundhouse can model; an app inside that subset is still a Rails app with a generated native build.
 
 The binary worked: 2.8 MB on disk, about 19 MB RSS while serving requests. The memory goal was met. But the memory was the only goal it met.
 
