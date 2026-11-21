@@ -883,6 +883,7 @@ render() {
       --db "$db/yardoc" \
       --no-save \
       --no-private \
+      --hide-api internal \
       --template-path "$ROOT/templates/yard" \
       --readme "api-index.md" \
       --exclude 'runtime/tep/' \
