@@ -1,8 +1,8 @@
 ---
 title: Why I didn't rewrite my Rails app in Rust
-description: A deploy brought my 1 GB Rails API service down. Rust was the obvious answer, but it made the code heavier to read. I kept the Rails conventions, dropped the layers, and let coding agents write what used to be a gem. The result is native performance with the same conventions.
+description: Rust would have fixed the memory problem on my 1 GB Rails API, but made the code heavier to read. Snails keeps the Rails conventions without the Rails stack; it keeps the code readable.
 date: 2026-11-20
-updated: 2026-11-20
+updated: 2026-11-22
 author: Rinn
 ---
 
@@ -91,13 +91,21 @@ The subset was still the limit.
 
 The source was still Rails. I wanted the app source to be the code I read and change: the controllers, forms, jobs, and tests below. With Roundhouse, the binary is a build artifact of the Rails app.
 
-Contributing to Roundhouse wouldn't have been enough. I wanted a framework, not a transpiler. It had to work for other API apps and keep the Rails conventions. The compiler needs static code; the layers Rails added — Active Record, the HTML view layer, and the gems — need the Ruby runtime. To drop the runtime, those layers had to go. So I created Snails.
+I wanted the Rails conventions without the Rails stack.
 
-The memory was about the same as Roundhouse's. The difference was that the code I was reading was the code I was running.
+That stack is built on runtime metaprogramming: Active Record defines methods at runtime, Action View compiles templates at runtime, and gems load code at runtime.
+
+Spinel can only compile code it can resolve at build time. So a runtime-free framework couldn't keep the stack. It had to reimplement the parts it needed in plain Ruby.
+
+I could have contributed to Roundhouse instead. But it keeps the stack, and I wanted a framework, not a transpiler. So I created Snails.
 
 ## Snails
 
-Snails is a Rails-like framework for API-only Ruby apps. It keeps the Rails conventions and compiles the app, the framework, and the HTTP server into one native binary with Spinel. The app is still Ruby source. There is no transpiled source: the files you write are the files the compiler reads. There is no Ruby VM or Rails stack at runtime. It has no gem dependencies. The [Snails Design](/blog/the-snails-design/) makes the argument; this post is the test.
+Snails is the framework I wanted for API-only Ruby apps: Rails conventions, no Rails stack. It compiles the app, the framework, and the HTTP server into one native binary with Spinel.
+
+The app is still Ruby source. There is no transpiled source: the files I write are the files the compiler reads.
+
+It uses about the same memory as Roundhouse. The [Snails Design](/blog/the-snails-design/) makes the argument; this post is the test.
 
 ## What survived
 
