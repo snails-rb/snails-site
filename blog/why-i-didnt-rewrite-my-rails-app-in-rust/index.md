@@ -4,6 +4,7 @@ description: Rust would have fixed the memory problem on my 1 GB Rails API, but 
 date: 2026-11-20
 updated: 2026-11-22
 author: Rinn
+draft: true
 ---
 
 *Disclosure: I'm the author of Snails, the framework this post is about. The numbers are from my own deploys, not a lab.*

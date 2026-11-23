@@ -1,0 +1,290 @@
+---
+title: A native Rails-like Ruby app using 20 MB of memory
+description: My Rails API ran out of headroom on a 1 GB node during deploys. I kept the Rails-like conventions and compiled the Ruby app with Spinel into a native binary; the app process is now about 20 MB, and the node is using 362 MB.
+date: 2026-11-23
+author: Rinn
+---
+
+*Disclosure: I'm the author of Snails, the framework this post is about. The numbers are from my own deploys, not a lab.*
+
+In October, a deploy brought my Rails API service down. The app is a telemetry backend: five client services send metrics and logs over OTLP/HTTP to two ingest routes. It was a stock Rails 8.1 API app on a 1 GB node with 951 MB usable, running a single Puma process, not in cluster mode. The node was the smallest free-tier node I was willing to run the service on, and the question was whether the full Rails stack could fit on it.
+
+At steady state, the app process used about 175 MB, and with Postgres running, the node sat at 504 MB. Kamal starts the new container before it stops the old one, so a deploy runs two Rails processes. The new process uses more memory during boot than its steady 175 MB; with the old process still serving, the node ran out of headroom and started swapping. Boot time stretched from 70–80 seconds to 200–300 seconds, and deploys timed out. One deploy froze the node; I had to force a reboot.
+
+I assumed Postgres was using most of the memory. I moved the database to SQLite to remove the container and turned on zram. Zram absorbed the peak and brought boot down to 17 seconds, but it did not lower the peak; every deploy still depended on compressed swap. The default Rails 8.1 Dockerfile already preloads jemalloc, so the allocator wasn't the cause either.
+
+The full Rails stack, not the app code, was the problem: a deploy had to fit two processes on the node, and one was already at 175 MB. On a 1 GB node, I couldn't find anything left to tune.
+
+## The obvious answers
+
+Rust was the obvious answer. I had already ported a job worker from another Rails service to Rust. The port worked: about 360 MB for the Rails job container, about 2 MB for the Rust port that replaced it, on the same 1 GB node. It's one data point, not a benchmark. But the gap was real.
+
+The port did what I wanted. If memory were the only goal, I would have stopped there. I didn't port this one. What stopped me wasn't the memory. It was the code. I'm the one who has to read it. A coding agent can produce it faster than I can read it. That's a separate post.
+
+The other obvious answer was a bigger node. A 2 GB node would have fixed the deploy: the two Rails processes would have had room to overlap, and I could have run Puma in cluster mode.
+
+Cost wasn't the point. Memory was. The bigger node would have solved the deploy by adding memory, not by making Rails need less of it. The Rust port was smaller, but it ran on the same 1 GB node, so the node wasn't the hard limit. The question was whether the Rails conventions could survive on the same hardware.
+
+A framework that needs more than the smallest free-tier node isn't usable for this class of service. That was the constraint I wasn't willing to give up. I wanted to keep the Rails conventions and stay on that node. That meant removing the Rails stack that came with them.
+
+## Roundhouse kept the Rails stack
+
+I tried [Roundhouse](https://rubys.github.io/roundhouse/) first. It's Sam Ruby's transpiler: it reads a Rails app as-is and emits a standalone project. One target is [Spinel](https://github.com/matz/spinel), Matz's ahead-of-time Ruby compiler.
+
+The Ruby/Spinel target compiles the app and the Rails framework into one binary. The Rails app remains the source and the output is regenerated, not edited; if you need to patch the output, that's a bug report, not a workflow. That path only covers the Rails constructs Roundhouse can model; an app that stays within that subset is still a Rails app with a generated native build.
+
+The binary booted and served requests: 2.8 MB on disk, about 19 MB RSS. The memory goal was met. But memory was the only goal it met.
+
+The Rails stack was still there. Roundhouse removed the CRuby process, but Active Record, the gems, and the Ruby runtime those layers need were still in the binary.
+
+The subset was still the limit.
+
+The source was still Rails. I wanted the app source to be the code I read and change: the controllers, forms, jobs, and tests below. With Roundhouse, the binary is a build artifact of the Rails app.
+
+I wanted the Rails conventions without the Rails stack.
+
+That stack does much of its work at runtime: Active Record defines model methods, the router builds path helpers, and gems load their code.
+
+Spinel can only compile code it can resolve at build time. So a framework without runtime metaprogramming couldn't keep the stack. It had to reimplement the parts it needed in plain Ruby.
+
+I could have contributed to Roundhouse instead. But it keeps the stack, and I wanted a framework, not a transpiler. So I created Snails.
+
+## Snails
+
+[Snails](https://github.com/snails-rb/snails) is the framework I wanted for API-only Ruby apps: Rails conventions, no Rails stack. It compiles the app, the framework, and the HTTP server into one native binary with Spinel.
+
+The app is still Ruby source. There is no generated source tree: the files I write are the files the compiler reads.
+
+The app uses about the same memory as the Roundhouse build. The [Snails Design](/blog/the-snails-design/) makes the argument; this post is the test.
+
+## What survived
+
+The request path looks familiar. The model layer doesn't.
+
+### Routes
+
+```ruby
+# config/routes.rb
+module Snails
+  module RouteTable
+    def self.table
+      [
+        get("/up", Snails::HealthController, :show),
+        *resources("/v1/metrics", MetricsController, :json, [ :create ]),
+        *resources("/v1/logs", LogsController, :json, [ :create ])
+      ]
+    end
+  end
+end
+
+RouteHelpers.metrics_path # "/v1/metrics"
+```
+
+The route table uses the same `get`/`resources` helpers as Rails, but the rows are a plain array of controller classes and actions, rather than a `Rails.application.routes.draw` block. The table is a plain list because the route helpers are generated from it at build time, not from a `draw` block at boot.
+
+### Controllers
+
+```ruby
+class MetricsController < ApplicationController
+  include IngestRejection
+  include BearerAuth
+  include OtlpRequestBody
+
+  before_action :authenticate_bearer!
+  before_action :parse_body
+
+  def create
+    rows = OtlpDecoder.new(parsed_body).rows
+    MetricSample.upsert_rows!(rows)
+    head(:ok)
+  rescue Sqlx::RecordInvalid => e
+    reject_ingest("invalid_rows", :unprocessable_content, rows.size, e.record.errors.join(", "))
+  end
+end
+
+# app/controllers/concerns/bearer_auth.rb
+module BearerAuth
+  private
+
+  def authenticate_bearer!
+    account_id = account_id_from_bearer
+    if account_id.nil?
+      reject_unauthorized
+    else
+      @account_id = account_id
+    end
+  end
+end
+```
+
+`ApplicationController`, `before_action`, and `def create` are standard Rails. The concerns are plain Ruby modules: no `ActiveSupport::Concern`, no `included do`; the controller registers the filters itself. The `Sqlx::RecordInvalid` rescue is Snails-specific.
+
+### Forms
+
+```ruby
+class MetricSampleForm < Snails::Form
+  KINDS = %w[counter delta gauge].freeze
+
+  validates :account_id, presence: true
+  validate :account_id_is_a_count
+  validates :ts, presence: true
+  validate :ts_is_a_time
+  validates :kind, inclusion: { in: KINDS }, allow_blank: true
+  validate :labels_are_flat
+  validate :value_is_finite
+end
+```
+
+The `validates` DSL is the standard Rails validation DSL. Rails keeps those rules on the model; Snails puts them in a form. The form validates input, and the `Sqlx` model writes rows.
+
+### Jobs
+
+```ruby
+class MetricsRollupPruneJob < ActiveJob::Base
+  def self.perform(data)
+    Account.all.each do |account|
+      days = account.retention_policy.metrics_days
+      Metrics5mWindow.prune_before!(account.id, days.days.ago)
+    end
+  end
+end
+
+ActiveJob.recurring(MetricsRollupPruneJob, schedule: "0 6 * * *")
+```
+
+`ActiveJob::Base` is the Rails base class. Rails 8's Solid Queue puts recurring tasks in `config/recurring.yml`; Snails keeps the schedule in Ruby code. `ActiveJob.recurring` is one line in `config/environment.rb`. The job API is three calls under `ActiveJob`: `ActiveJob.enqueue` for a one-off job, `ActiveJob.schedule` for a delayed one, and `ActiveJob.recurring` for a recurring one. The class-side `perform` is the job body.
+
+### Tests
+
+```ruby
+class MetricsIngestTest < Snails::Harness::IntegrationTest
+  test "ingest accepts valid payload" do
+    post_raw("/v1/metrics", gauge_json("server-proxy"), json_headers)
+    assert_response 200
+    assert_equal 1, MetricSample.count
+  end
+end
+```
+
+The test sends a real HTTP request and reads the table. The assertions are standard Rails integration-test assertions. The harness resets the database tables and runs `setup` before each case.
+
+Routes, controllers, forms, jobs, and tests still use Rails conventions. The model layer does not: models are plain `Sqlx::Base` classes.
+
+## What it cost
+
+Active Record was the biggest change. I didn't use associations or callbacks in this app, but I did use relation chaining and validations. Models are plain `Sqlx::Base` classes, and reads and writes go through `Sqlx`, the framework's SQL API. The cost was real: more code to write, not harder code to read.
+
+### Read path
+
+Most queries are reads. Rails relation chaining builds the SQL from calls like `where`, `order`, `offset`, and `limit`:
+
+```ruby
+# Rails
+ApiToken.where(account_id: id).order(id: :desc).offset(40).limit(20)
+
+# Snails
+ApiToken.fetch_many({ account_id: id }, order: :desc, offset: 40, limit: 20)
+```
+
+Snails has a fixed set of finders for common queries. For a query that groups or joins, there is no finder; you write SQL:
+
+```ruby
+# Rails
+MetricSample.where(account_id: id).group(:service).count
+# => { "api" => 120, "worker" => 80 }
+
+# Snails
+MetricSample.rows_by_sql(
+  "SELECT service, COUNT(*) AS total FROM metric_samples WHERE account_id = ? GROUP BY service",
+  [id]
+)
+# => [{ "service" => "api", "total" => 120 }, { "service" => "worker", "total" => 80 }]
+```
+
+The Snails version is longer; it is plain SQL with bound values.
+
+### Write path
+
+Validation moved to forms. The write path was the bigger job: validation, batching, and the derived tables are now explicit steps.
+
+This is the write path for one batch:
+
+```ruby
+class MetricSample < Sqlx::Base
+  def self.table_name = "metric_samples"
+
+  def self.upsert_rows!(rows)
+    forms = rows.map { |row| MetricSampleForm.new(row) }
+    forms.each { |form| raise Sqlx::RecordInvalid, form unless form.valid? }
+
+    stored = forms.map do |form|
+      { account_id: form.account_id, ts: form.ts, service: form.service,
+        host: form.host, metric: form.metric, kind: form.kind,
+        labels: JSON.generate(form.labels.sort.to_h), value: form.value }
+    end
+
+    transaction do
+      count = 0
+      stored.each_slice(500) do |batch|
+        count += upsert_all!(batch, unique_by: %i[account_id ts service host metric labels])
+      end
+      MetricSeriesLatest.upsert_newer!(stored)
+      Metrics5mWindow.refresh!(stored)
+      count
+    end
+  end
+end
+```
+
+The form validates each row. The model writes the validated rows and the two derived tables, the latest series and the five-minute window, in one transaction. The 500-row batches keep each statement under SQLite's bind limit. There are no callbacks; the refresh is a line in the method. The tests check the derived tables, so a forgotten refresh fails the suite.
+
+Removing Active Record takes more code. The code is plain Ruby: no metaprogramming, no callback chains, no hidden side effects. The write steps are explicit in the method, in the order they run. A Rails version of this method without callbacks would look much the same; the Snails-specific cost is the form and the plain model layer.
+
+### Spinel
+
+Spinel was the other cost. While I was building Snails, I filed more than twenty Spinel issues: compiler bugs, missing constants, and cases where the emitted code didn't match the source. The hard part was doing both at once: debugging the compiler, filing issues, waiting for fixes, and building the framework. Most fixes landed the same day. Spinel is far more stable now, and it is stable enough for this app. It is still improving every day. You can find them in the [Spinel issue tracker](https://github.com/matz/spinel/issues?q=author%3Akslrinn).
+
+## What the numbers say
+
+The Rails baseline was about 175 MB for the app process and 504 MB on the node. In the Snails build, the app process is about 20 MB RSS; the binary is 4.3 MB. The node is using 362 MB.
+
+| Measure | Rails baseline | Snails build |
+|---|---:|---:|
+| App process RSS | ~175 MB | ~20 MB |
+| Node memory used | 504 MB | 362 MB |
+| Node memory available | 447 MB | 589 MB |
+| Binary on disk | — | 4.3 MB |
+| Database | Postgres container | SQLite in the app |
+| Server | one Puma process | one native process |
+
+The app process dropped by about 155 MB. The node's used memory dropped by 142 MB, and available memory rose by the same amount. The node also runs a query agent and kamal-proxy, so its memory use fell by less than the app process did. The database moved from a Postgres container to SQLite in the app. That change shows up in the node's memory, not in the app process.
+
+The Rails baseline is from the October deploy. The Snails numbers are from the production node now. The current numbers are steady-state measurements: process RSS for the app, `free -m` for the node, and `ls -lh` for the binary. This is one service, not a benchmark.
+
+Throughput is a separate question. Snails runs one native process, multi-threaded across all cores: no worker processes, no GVL. The [snails-benchmark](https://github.com/snails-rb/snails-benchmark) repo has a benchmark of `/up` against Rails in cluster mode, with the method and raw results.
+
+Rails conventions, native performance. The code shows the first; the numbers show the second. Neither is the trade-off. The trade-off is what I gave up.
+
+## The trade-off
+
+The obvious trade-off is Active Record, gems, and HTML views. For an API app, views are already out of scope. The real trade-off is the dependencies themselves: Active Record, Puma, the cron parser, Active Model validations.
+
+A few years ago, that would have sounded insane. Drop gem compatibility? Write your own web server and cron parser? You'd be rebuilding a decade of work. Coding agents change the math. They can write the code you'd otherwise get from a gem, and you can read it. Snails is the proof: the web server, the cron parser, and the rest are implemented in the framework, each only as large as it needs to be. The cron parser is one file: it accepts the five-field grammar the scheduler needs and rejects everything else at parse time. The app does the same: it implements what it needs instead of adding a gem.
+
+Snails starts from a single assumption: agents write the code, and developers read it. That assumption is what makes the trade-off possible. The Rust port had its own types, error handling, and module layout, and I had to learn them. Snails keeps the Rails conventions. The agent writes controllers, forms, and jobs I already know how to read. If the agent can write the web server, the cron parser, and the forms, I don't need a gem for them. I need code I can read.
+
+Snails is my attempt to keep the Rails conventions and make the model layer explicit on hardware where the full stack didn't fit. Whether that balance holds beyond this app is the open question.
+
+## What would you not give up?
+
+The question for your app is not whether you can live without Active Record. It's whether you're willing to own the code that used to be a gem. Would you remove Active Record, cut the external dependencies, and write the pieces yourself?
+
+If the answer is no, stay on Rails. The memory problem is real, but the choice is yours.
+
+Snails is at 1.x, and the public API is stable. The conventions are the compatibility promise, and they won't change.
+
+If you try Snails and run into any issues, please let me know. Open a discussion or file an issue and tell me which Rails convention you'd miss.
+
+The [manual's Coming from Rails chapter](/manual/coming-from-rails/) covers the port. The [Snails Design](/blog/the-snails-design/) makes the case. The [repository](https://github.com/snails-rb/snails) has the code, and the [benchmark](https://github.com/snails-rb/snails-benchmark) has the method and raw results.
+
+What would you not give up?
