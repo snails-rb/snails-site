@@ -11,7 +11,7 @@ In October, a deploy brought my Rails API service down. The app is a telemetry b
 
 At steady state, the app process used about 175 MB, and with Postgres running, the node sat at 504 MB. Kamal starts the new container before it stops the old one, so a deploy runs two Rails processes. The new process uses more memory during boot than its steady 175 MB; with the old process still serving, the node ran out of headroom and started swapping. Boot time stretched from 70–80 seconds to 200–300 seconds, and deploys timed out. One deploy froze the node; I had to force a reboot.
 
-I assumed Postgres was using most of the memory. I moved the database to SQLite to remove the container and turned on zram. Zram absorbed the peak and brought boot back to 17 seconds, but it did not lower the peak; every deploy still depended on compressed swap. The default Rails 8.1 Dockerfile already preloads jemalloc, so the allocator wasn't the cause either.
+I assumed Postgres was using most of the memory. I moved the database to SQLite to remove the container and turned on zram. Zram absorbed the peak and brought boot down to 17 seconds, but it did not lower the peak; every deploy still depended on compressed swap. The default Rails 8.1 Dockerfile already preloads jemalloc, so the allocator wasn't the cause either.
 
 The full Rails stack, not the app code, was the problem: a deploy had to fit two processes on the node, and one was already at 175 MB. On a 1 GB node, I couldn't find anything left to tune.
 
