@@ -51,7 +51,7 @@ I could have contributed to Roundhouse instead. But it keeps the stack, and I wa
 
 ## Snails
 
-Snails is the framework I wanted for API-only Ruby apps: Rails conventions, no Rails stack. It compiles the app, the framework, and the HTTP server into one native binary with Spinel.
+[Snails](https://github.com/snails-rb/snails) is the framework I wanted for API-only Ruby apps: Rails conventions, no Rails stack. It compiles the app, the framework, and the HTTP server into one native binary with Spinel.
 
 The app is still Ruby source. There is no transpiled source: the files I write are the files the compiler reads.
 
