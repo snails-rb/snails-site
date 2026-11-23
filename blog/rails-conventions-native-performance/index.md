@@ -1,6 +1,6 @@
 ---
-title: Rails conventions, native performance
-description: A Rails API on a 1 GB node ran out of memory during deploys. I kept the Rails conventions, dropped the Rails stack, and ended up with one native binary and about 20 MB RSS.
+title: A native Rails-like Ruby app using 20 MB of memory
+description: My Rails API kept running out of memory on a 1 GB node. I kept the Rails-like conventions and compiled the Ruby app with Spinel into a native binary; the app process is now about 20 MB, and the node is using 362 MB.
 date: 2026-11-23
 author: Rinn
 ---
