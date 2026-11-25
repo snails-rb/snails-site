@@ -23,7 +23,7 @@ const withSidebar = chapters.length > 0;
 const pageTitle = title ? `${title} — Snails` : 'Snails — Rails conventions, native performance';
 const pageDescription =
   description ??
-  'Snails is a Rails-like framework for API-only Ruby apps. It keeps the Rails conventions and removes the layers that add runtime overhead.';
+  'Snails is a Rails-like framework for API-only Ruby apps. It keeps the Rails conventions, drops the Ruby runtime, and compiles the app, the framework, and the HTTP server into one native binary.';
 const canonicalUrl = absoluteUrl(canonical);
 ---
 <!doctype html>

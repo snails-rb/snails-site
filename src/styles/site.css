@@ -646,6 +646,16 @@ article strong {
   font-size: var(--text-sm);
 }
 
+/* The model-layer cost is a decision point, so it reads at body size rather
+   than as the small-print scope note. */
+.front .tradeoff {
+  max-width: var(--measure);
+  margin: var(--space-5) 0 0;
+  color: var(--muted);
+  font-size: var(--text-base);
+  line-height: var(--leading-prose);
+}
+
 .front .scope {
   max-width: var(--measure);
   margin: var(--space-5) 0 0;

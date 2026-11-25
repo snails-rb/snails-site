@@ -1,8 +1,8 @@
 # Snails API
 
 <div class="api-intro">
-  <p class="api-lede">Snails is a Rails-like framework for API-only Ruby apps. It keeps the Rails conventions an API needs, removes the layers that add runtime overhead, and compiles the app into one native binary.</p>
-  <p class="api-meta">1.x · MIT licensed · <a href="https://github.com/snails-rb/snails">Source on GitHub</a> · <a href="/manual/welcome-to-snails/">Read the manual</a></p>
+  <p class="api-lede">Snails is a Rails-like framework for API-only Ruby apps. It keeps the Rails conventions an API needs and builds the framework in plain Ruby. The app, the framework, and the HTTP server compile into one native binary.</p>
+  <p class="api-meta">1.x · Public API stable · MIT licensed · <a href="https://github.com/snails-rb/snails">Source on GitHub</a> · <a href="/manual/welcome-to-snails/">Read the manual</a></p>
 </div>
 
 ## Framework namespaces
