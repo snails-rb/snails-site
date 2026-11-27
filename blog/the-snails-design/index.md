@@ -2,19 +2,19 @@
 title: The Snails Design
 description: The design choices behind Snails — Rails conventions without the runtime overhead.
 date: 2026-11-13
-updated: 2026-11-25
+updated: 2026-11-27
 author: Snails
 ---
 
 Snails is a Rails-like framework for API-only Ruby apps. It keeps the Rails conventions that make an API app predictable — routes, controllers, forms, mailers, jobs, tests, and a conventional folder layout — and drops the Ruby runtime. The app, the framework, and the HTTP server compile into one native binary with [Spinel](https://github.com/matz/spinel), Matz's ahead-of-time Ruby compiler. The design trades runtime conveniences for native performance and a lower memory footprint.
 
-Snails is built around one combination: a native, Rails-like Ruby app with a lower memory footprint. That combination has three constraints: a) A native Ruby app cannot carry the Rails stack in its source: Active Record defines methods, the router builds helpers, and gems load their code at runtime, while Spinel can only compile what it can resolve at build time. b) A Rails-like app rules out a rewrite in another language: the source stays Ruby. c) A lower memory footprint rules out the full stack: the Rails layers are where the memory goes. Put all three together, and the Rails stack has to go. Snails is that design. The production case behind those constraints is in [A native Rails-like Ruby app using 20 MB of memory](/blog/a-native-rails-like-ruby-app-using-20-mb-of-memory/).
+Snails is built around one combination: a native, Rails-like Ruby app with a lower memory footprint. That combination has three constraints: a) A native Ruby app cannot carry the Rails stack in its source: Active Record defines methods, the router builds helpers, and gems load their code at runtime, while Spinel can only compile what it can resolve at build time. b) A Rails-like app rules out a rewrite in another language: the source stays Ruby. c) A lower memory footprint rules out the full stack: the Rails runtime is where the memory goes. Put all three together, and the Rails stack has to go. Snails is that design. The production case behind those constraints is in [A native Rails-like Ruby app using 20 MB of memory](/blog/a-native-rails-like-ruby-app-using-20-mb-of-memory/).
 
 ## Rails' abstraction trade-off
 
 Rails is productive because it abstracts work a developer would otherwise do: Active Record hides SQL, Action View hides template rendering, the asset pipeline hides the frontend build, and gems supply behavior a team would otherwise build. Those abstractions made a team faster, and Rails accepted the runtime overhead: a Ruby runtime, Ruby's global VM lock (GVL), worker processes, and layers between the request and the database.
 
-Coding agents change that trade-off. They write SQL, work across a backend and a frontend, and implement what a gem would have provided instead of adding a dependency. The abstractions that saved a team time now add layers an agent does not need and the developer has to trust. Snails keeps the Rails conventions and the API style developers know, and removes the layers that add runtime overhead — no Active Record, no view layer, no gems — leaving one native binary.
+Coding agents change that trade-off. They write SQL, work across a backend and a frontend, and implement what a gem would have provided instead of adding a dependency. The abstractions that saved a team time now add layers an agent does not need and the developer has to trust. Snails keeps the Rails conventions and the API style developers know, and removes the layers that add runtime overhead — no Active Record, no server-rendered view layer, no gems — leaving one native binary.
 
 A common argument these days is that abstraction is over. The claim is too broad. The more specific claim is that the abstractions Rails chose for human writing no longer justify their runtime overhead when agents write the code. Abstraction is still necessary, but it should be thin enough to read and live in conventions and rules the agent follows and the developer checks. The agent writes predictable code; the developer checks the route, the SQL, the migration, and the tests, and decides what ships. The reason is the trade-off: keep what makes Rails productive, remove what makes it slow.
 
@@ -26,7 +26,7 @@ The point of the Rails conventions is predictability: an agent can add code with
 
 Rails 7 made Hotwire (Turbo and Stimulus) the default frontend for new apps. That stack is part of Rails' server-rendered default. Snails removes the Rails frontend stack entirely. The nearest equivalent is Rails API-only mode: controllers answer JSON, and the frontend is a separate app.
 
-There is no view layer, no asset pipeline, no Hotwire, no session store, and no CSRF middleware. With coding agents, a separate frontend is practical: an agent can turn the routes into [hurl](https://hurl.dev) files, and the JSON API gives both sides a clear contract. The frontend can live in the same repository or its own. The framework does not care whether the frontend is a SPA, a native app, or server-rendered HTML.
+There is no server-rendered view layer, no asset pipeline, no Hotwire, no framework session store, and no CSRF middleware. The app owns the session and the CSRF check. The frontend is a separate app, usually a SPA or a native app. For a browser-facing SPA, the framework provides the `cookies` jar, `cookies.signed`, and a CORS policy at `Snails.cors` that answers preflight requests and adds the response headers. With coding agents, a separate frontend is practical: an agent can turn the routes into [hurl](https://hurl.dev) files, and the JSON API gives both sides a clear contract. The frontend can live in the same repository or its own. The framework does not care whether the frontend is a SPA, a native app, or server-rendered HTML.
 
 ## Build-time code generation
 
