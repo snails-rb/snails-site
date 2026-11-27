@@ -111,7 +111,7 @@ const startup = { snails: '9 ms', railsDefault: '1.0 s' };
       <h2 id="features-title">Why Snails</h2>
       <p class="section-lede">
         Snails keeps the Rails conventions an API needs and builds the framework in plain Ruby.
-        It drops the Rails stack that makes Rails APIs slow and memory-intensive. A Snails app
+        It drops the Rails runtime that makes Rails APIs slow and memory-intensive. A Snails app
         serves more requests per second and uses less memory.
       </p>
 
@@ -162,8 +162,9 @@ const startup = { snails: '9 ms', railsDefault: '1.0 s' };
       </p>
 
       <p class="scope">
-        API-only by design: no view layer, no asset pipeline, no Active Record, no gems. If you
-        need server-rendered pages or the full Rails stack, Rails is the better fit.
+        API-only by design: no server-rendered view layer, no asset pipeline, no Active Record, no
+        gems. The frontend is a separate SPA or native app; cookies, signed cookies, and CORS are
+        built in. If you need server-rendered pages or the full Rails stack, Rails is the better fit.
       </p>
     </section>
 

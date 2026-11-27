@@ -13,7 +13,7 @@ At steady state, the app process used about 175 MB, and with Postgres running, t
 
 I assumed Postgres was using most of the memory. I moved the database to SQLite to remove the container and turned on zram. Zram absorbed the peak and brought boot down to 17 seconds, but it did not lower the peak; every deploy still depended on compressed swap. The default Rails 8.1 Dockerfile already preloads jemalloc, so the allocator wasn't the cause either.
 
-The full Rails stack, not the app code, was the problem: a deploy had to fit two processes on the node, and one was already at 175 MB. On a 1 GB node, I couldn't find anything left to tune.
+The Rails runtime, not the app code, was the problem: a deploy had to fit two processes on the node, and one was already at 175 MB. On a 1 GB node, I couldn't find anything left to tune.
 
 ## The obvious answers
 
@@ -267,7 +267,7 @@ Rails conventions, native performance. The code shows the first; the numbers sho
 
 ## The trade-off
 
-The obvious trade-off is Active Record, gems, and HTML views. For an API app, views are already out of scope. The real trade-off is the dependencies themselves: Active Record, Puma, the cron parser, Active Model validations.
+The obvious trade-off is Active Record, gems, and HTML views. For an API app, server-rendered views are already out of scope. the frontend is a separate app. The real trade-off is the dependencies themselves: Active Record, Puma, the cron parser, Active Model validations.
 
 A few years ago, that would have sounded insane. Drop gem compatibility? Write your own web server and cron parser? You'd be rebuilding a decade of work. Coding agents change the math. They can write the code you'd otherwise get from a gem, and you can read it. Snails is the proof: the web server, the cron parser, and the rest are implemented in the framework, each only as large as it needs to be. The cron parser is one file: it accepts the five-field grammar the scheduler needs and rejects everything else at parse time. The app does the same: it implements what it needs instead of adding a gem.
 
